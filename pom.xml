@@ -26,15 +26,18 @@
 		<tag/>
 		<url/>
 	</scm>
+
 	<properties>
 		<java.version>21</java.version>
+		<telegrambots.version>6.9.7.1</telegrambots.version>
+		<mapstruct.version>1.6.3</mapstruct.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -62,7 +65,17 @@
 		<dependency>
 			<groupId>org.telegram</groupId>
 			<artifactId>telegrambots</artifactId>
-			<version>6.9.7.1</version>
+			<version>${telegrambots.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>${mapstruct.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct-processor</artifactId>
+			<version>${mapstruct.version}</version>
 		</dependency>
 	</dependencies>
 
