@@ -13,6 +13,6 @@ public interface ProfileMapper {
     Profile fromDto(ProfileDto profileDto);
 
     // Метод для обновления существующего объекта
-    void updateEntityFromDto(ProfileDto profileDto, @MappingTarget Profile profileEntity);
+    void updateProfileEntityFromDto(ProfileDto profileDto, @MappingTarget Profile profileEntity);
 
 }

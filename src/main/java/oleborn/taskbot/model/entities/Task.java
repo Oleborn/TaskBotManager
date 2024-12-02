@@ -25,6 +25,10 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Автоматическая генерация ID.
     private long id;
 
+    @NotNull
+    @Column(nullable = false)
+    private long ownerId;
+
     @Column(nullable = false, length = 20)
     @Size(min = 1, max = 20)
     @NotNull
@@ -49,12 +53,6 @@ public class Task {
 
     @Column
     private boolean updated;
-
-    @Column
-    private LocalTime localTime;
-
-    @Column
-    private LocalDate localDate;
 
     @PrePersist
     protected void onCreate() {
