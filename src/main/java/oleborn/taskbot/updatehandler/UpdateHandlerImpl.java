@@ -1,19 +1,29 @@
 package oleborn.taskbot.updatehandler;
 
 import jakarta.annotation.Resource;
-import oleborn.taskbot.model.dto.ProfileDto;
 import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.repository.TaskRepository;
 import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.service.interfaces.TaskService;
+import oleborn.taskbot.utils.OutputMessages;
+import oleborn.taskbot.utils.RandomPictures;
+import oleborn.taskbot.utils.UrlWebForms;
+import oleborn.taskbot.utils.outputMethods.InlineKeyboardBuilder;
+import oleborn.taskbot.utils.outputMethods.OutputsMethods;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 public class UpdateHandlerImpl implements UpdateHandler {
 
+    @Value("${taskbot.provider}")
+    private String provider;
+
     @Resource
     private ProfileService profileService;
+    @Resource
+    private OutputsMethods outputsMethods;
     @Resource
     private TaskService taskService;
     @Resource
@@ -22,14 +32,14 @@ public class UpdateHandlerImpl implements UpdateHandler {
     @Override
     public void handler(Update update) {
 
-        ProfileDto profileDto = profileService.getProfileByID(update.getMessage().getFrom().getId());
+       // ProfileDto profileDto = profileService.getProfileByID(update.getMessage().getFrom().getId());
 
         if (update.hasMessage() && update.getMessage().getText().startsWith("/")){
-//            hanleCommand();
+            handleCommand(update);
             return;
         }
 
-        switch (profileDto.getCommunicationStatus()){
+//        switch (profileDto.getCommunicationStatus()){
 //            case DEFAULT -> as;
 //
 //            //Создание таски
@@ -51,7 +61,24 @@ public class UpdateHandlerImpl implements UpdateHandler {
 //            case UPDATE_DATE_BIRTHSDAY -> as;
 //
 //            case BLOCKED -> as;
-        }
+//        }
+    }
+
+    private void handleCommand(Update update) {
+
+         switch (update.getMessage().getText()) {
+             case "/start" -> outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
+                     update,
+                     OutputMessages.START_MESSAGE.getTextMessage(),
+                     RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
+                     new InlineKeyboardBuilder()
+                             .addWebButton("Добавить напоминание", UrlWebForms.TASK.getUrl().formatted(provider))
+                             .nextRow()
+                             .addWebButton("Профиль", "https://f305-5-44-173-0.ngrok-free.app/task-form.html")
+                             .build()
+                     );
+         }
+
     }
 
     private void inputText(Update update) {

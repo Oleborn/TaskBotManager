@@ -62,9 +62,6 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public OffsetDateTime convertClientToServerTime(String localDate, String localTime, String clientTimeZone) {
-        System.out.println(localDate);
-        System.out.println(localTime);
-        System.out.println(clientTimeZone);
         // Получение часового пояса сервера
         ZoneId serverZoneId = ZoneId.systemDefault();
         // Преобразование клиентских данных в ZonedDateTime
