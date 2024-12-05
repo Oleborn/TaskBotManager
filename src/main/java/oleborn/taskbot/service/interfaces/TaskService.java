@@ -4,6 +4,7 @@ import oleborn.taskbot.model.dto.TaskDto;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public interface TaskService {
 
@@ -17,6 +18,10 @@ public interface TaskService {
 
     LocalDateTime createLocalDateTime(String localDate, String localTime);
 
+    List<TaskDto> getTasksForSending(OffsetDateTime time);
+
     OffsetDateTime convertClientToServerTime(String localDate, String localTime, String clientTimeZone);
+
+    void outputInMessageTask(TaskDto taskDto);
 
 }

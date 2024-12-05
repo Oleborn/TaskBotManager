@@ -38,6 +38,11 @@ public class UpdateHandlerImpl implements UpdateHandler {
             handleCommand(update);
             return;
         }
+        if (update.hasCallbackQuery()) {
+            switch (update.getCallbackQuery().getData()){
+                case "thanks" -> outputsMethods.outputMessageWithCapture(update, "Да пожалуйста \uD83E\uDEE1", RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture());
+            }
+        }
 
 //        switch (profileDto.getCommunicationStatus()){
 //            case DEFAULT -> as;
@@ -74,11 +79,10 @@ public class UpdateHandlerImpl implements UpdateHandler {
                      new InlineKeyboardBuilder()
                              .addWebButton("Добавить напоминание", UrlWebForms.TASK.getUrl().formatted(provider))
                              .nextRow()
-                             .addWebButton("Профиль", "https://f305-5-44-173-0.ngrok-free.app/task-form.html")
+                             .addWebButton("Профиль", "https://1a07-5-44-173-0.ngrok-free.app/task-form.html")
                              .build()
                      );
          }
-
     }
 
     private void inputText(Update update) {

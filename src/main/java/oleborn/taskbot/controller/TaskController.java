@@ -13,6 +13,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+
 @RestController
 @RequestMapping("/task")
 public class TaskController {
@@ -34,22 +37,27 @@ public class TaskController {
                                            @RequestParam String timeZone
     )
     {
+
+        OffsetDateTime resultTime = taskService.convertClientToServerTime(localDate, localTime, timeZone);
+
         taskService.createTask(TaskDto.builder()
                 .ownerId(recipient)
                 .creatorId(user_id)
                 .title(title)
                 .description(description)
-                .dateSending(taskService.convertClientToServerTime(localDate, localTime, timeZone))
+                .dateSending(resultTime)
                 .sent(false)
                 .updated(false)
                 .build());
 
+        String formatTime = resultTime.format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
+
         outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
                 user_id,
-                OutputMessages.TASK_CREATED.getTextMessage().formatted(title, taskService.convertClientToServerTime(localDate, localTime, timeZone).toString()),
+                OutputMessages.TASK_CREATED.getTextMessage().formatted(title, formatTime),
                 RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture(),
                 new InlineKeyboardBuilder()
-                        .addButton("Test", "asd")
+                        .addButton("Сказать \"спасибо\"!", "thanks") //TODO тут можно поменять
                         .build()
                 );
         return null;

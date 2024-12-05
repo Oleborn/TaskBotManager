@@ -63,6 +63,24 @@ public class OutputsMethods extends Bot {
         }
     }
 
+    public void outputMessageWithCapture(Long id, String text, String namePhoto) {
+        InputFile inputFile = new InputFile();
+        var is = ClassLoader.getSystemResourceAsStream("images/" + namePhoto + ".jpg");
+        inputFile.setMedia(is, namePhoto);
+
+        SendPhoto sendPhoto = SendPhoto.builder()
+                .photo(inputFile)
+                .chatId(id)
+                .parseMode("HTML")
+                .caption(text)
+                .build();
+        try {
+            execute(sendPhoto);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException("Фото не загрузилось!");
+        }
+    }
+
     public void outputMessageWithCaptureAndInlineKeyboard(Update update, String text, String namePhoto, InlineKeyboardMarkup kb) {
         InputFile inputFile = new InputFile();
         var is = ClassLoader.getSystemResourceAsStream("images/" + namePhoto + ".jpg");

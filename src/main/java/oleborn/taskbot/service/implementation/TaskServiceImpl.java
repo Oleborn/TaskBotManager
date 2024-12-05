@@ -6,10 +6,14 @@ import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.model.entities.Task;
 import oleborn.taskbot.repository.TaskRepository;
 import oleborn.taskbot.service.interfaces.TaskService;
+import oleborn.taskbot.utils.OutputMessages;
+import oleborn.taskbot.utils.RandomPictures;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -61,6 +65,14 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public List<TaskDto> getTasksForSending(OffsetDateTime time) {
+        return taskRepository.findTasksToSend(time)
+                .stream()
+                .map(task -> taskMapper.toDto(task))
+                .toList();
+    }
+
+    @Override
     public OffsetDateTime convertClientToServerTime(String localDate, String localTime, String clientTimeZone) {
         // Получение часового пояса сервера
         ZoneId serverZoneId = ZoneId.systemDefault();
@@ -72,8 +84,25 @@ public class TaskServiceImpl implements TaskService {
         );
         // Приведение времени к серверному часовому поясу
         ZonedDateTime serverDateTime = clientDateTime.withZoneSameInstant(serverZoneId);
-
         // Преобразование в OffsetDateTime (включает смещение)
         return serverDateTime.toOffsetDateTime();
+    }
+
+    @Override
+    public void outputInMessageTask(TaskDto taskDto) {
+        TaskDto buildTaskDto = TaskDto.builder()
+                .id(taskDto.getId())
+                .ownerId(taskDto.getOwnerId())
+                .creatorId(taskDto.getCreatorId())
+                .title(taskDto.getTitle())
+                .description(taskDto.getDescription())
+                .dateCreated(taskDto.getDateCreated())
+                .dateModified(LocalDateTime.now())
+                .dateSending(OffsetDateTime.now())
+                .sent(true)
+                .updated(true)
+                .build();
+
+        taskRepository.save(taskMapper.toEntity(buildTaskDto));
     }
 }
