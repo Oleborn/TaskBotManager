@@ -1,5 +1,6 @@
 package oleborn.taskbot.utils.outputMethods;
 
+import lombok.extern.slf4j.Slf4j;
 import oleborn.taskbot.bot.Bot;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -13,10 +14,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Slf4j
 public class OutputsMethods extends Bot {
 
     public void outputMessage(Long id, String text) {
@@ -47,7 +50,9 @@ public class OutputsMethods extends Bot {
 
     public void outputMessageWithCapture(Update update, String text, String namePhoto) {
         InputFile inputFile = new InputFile();
+
         var is = ClassLoader.getSystemResourceAsStream("images/" + namePhoto + ".jpg");
+
         inputFile.setMedia(is, namePhoto);
 
         SendPhoto sendPhoto = SendPhoto.builder()
@@ -65,9 +70,17 @@ public class OutputsMethods extends Bot {
 
     public void outputMessageWithCapture(Long id, String text, String namePhoto) {
         InputFile inputFile = new InputFile();
-        var is = ClassLoader.getSystemResourceAsStream("images/" + namePhoto + ".jpg");
+
+        // Попытка загрузить файл
+        InputStream is = getClass().getClassLoader().getResourceAsStream("images/" + namePhoto + ".jpg");
+        if (is == null) {
+            log.error("Файл изображения не найден: images/{}.jpg", namePhoto);
+            return;
+        }
+
         inputFile.setMedia(is, namePhoto);
 
+        // Отправка фото
         SendPhoto sendPhoto = SendPhoto.builder()
                 .photo(inputFile)
                 .chatId(id)
@@ -77,13 +90,13 @@ public class OutputsMethods extends Bot {
         try {
             execute(sendPhoto);
         } catch (TelegramApiException e) {
-            throw new RuntimeException("Фото не загрузилось!");
+            log.error("Ошибка Telegram API при отправке фото: {}", e.getMessage(), e);
         }
     }
 
     public void outputMessageWithCaptureAndInlineKeyboard(Update update, String text, String namePhoto, InlineKeyboardMarkup kb) {
         InputFile inputFile = new InputFile();
-        var is = ClassLoader.getSystemResourceAsStream("images/" + namePhoto + ".jpg");
+        InputStream is = getClass().getClassLoader().getResourceAsStream("images/" + namePhoto + ".jpg");
         inputFile.setMedia(is, namePhoto);
 
         SendPhoto sendPhoto = SendPhoto.builder()
@@ -102,7 +115,7 @@ public class OutputsMethods extends Bot {
 
     public void outputMessageWithCaptureAndInlineKeyboard(Long id, String text, String namePhoto, InlineKeyboardMarkup kb) {
         InputFile inputFile = new InputFile();
-        var is = ClassLoader.getSystemResourceAsStream("images/" + namePhoto + ".jpg");
+        InputStream is = getClass().getClassLoader().getResourceAsStream("images/" + namePhoto + ".jpg");
         inputFile.setMedia(is, namePhoto);
 
         SendPhoto sendPhoto = SendPhoto.builder()
