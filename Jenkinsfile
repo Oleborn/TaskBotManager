@@ -17,8 +17,10 @@ pipeline {
 
         stage('Debug Environment Variables') {
             steps {
-                sh 'env | grep DB_'
-                sh 'env | grep BOT_'
+                script {
+                    echo "DB_PASSWORD=${env.DB_PASSWORD}"
+                    echo "BOT_TOKEN=${env.BOT_TOKEN}"
+                }
             }
         }
 
