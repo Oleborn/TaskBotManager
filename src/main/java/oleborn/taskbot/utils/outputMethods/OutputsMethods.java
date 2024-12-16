@@ -51,7 +51,7 @@ public class OutputsMethods extends Bot {
     public void outputMessageWithCapture(Update update, String text, String namePhoto) {
         InputFile inputFile = new InputFile();
 
-        var is = ClassLoader.getSystemResourceAsStream("images/" + namePhoto + ".jpg");
+        InputStream is = getClass().getClassLoader().getResourceAsStream("images/" + namePhoto + ".jpg");
 
         inputFile.setMedia(is, namePhoto);
 
