@@ -11,14 +11,16 @@ pipeline {
         maven 'Maven 3.9.9'
     }
 
-    stage('Debug Environment Variables') {
-        steps {
-            sh 'env | grep DB_'
-            sh 'env | grep BOT_'
-        }
-    }
+
 
     stages {
+
+        stage('Debug Environment Variables') {
+            steps {
+                sh 'env | grep DB_'
+                sh 'env | grep BOT_'
+            }
+        }
 
         stage('Clone Repository') {
             steps {
