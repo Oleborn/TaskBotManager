@@ -15,16 +15,6 @@ pipeline {
 
     stages {
 
-        stage('Debug Environment Variables (Real Values)') {
-            steps {
-                script {
-                    // Предупреждение: Опасно в Production!
-                    echo "DB_PASSWORD=${env.DB_PASSWORD.toString()}"
-                    echo "BOT_TOKEN=${env.BOT_TOKEN.toString()}"
-                }
-            }
-        }
-
         stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/Oleborn/TaskBotManager.git'
