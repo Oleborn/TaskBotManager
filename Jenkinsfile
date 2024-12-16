@@ -1,8 +1,21 @@
 pipeline {
     agent any
 
+    environment {
+        DB_PASSWORD = credentials('db_password') // Получаем пароль из Jenkins Credentials
+        BOT_TOKEN = credentials('bot_token') // Получаем токен из Jenkins Credentials
+    }
+
+
     tools {
         maven 'Maven 3.9.9'
+    }
+
+    stage('Debug Environment Variables') {
+        steps {
+            sh 'env | grep DB_'
+            sh 'env | grep BOT_'
+        }
     }
 
     stages {
