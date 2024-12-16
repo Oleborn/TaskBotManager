@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 public enum UrlWebForms {
 
 
-    TASK("https://%s/task-form.html");
+    TASK("http://%s/task-form.html");
 
     private final String url;
 }
