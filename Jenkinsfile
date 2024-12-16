@@ -15,11 +15,12 @@ pipeline {
 
     stages {
 
-        stage('Debug Environment Variables') {
+        stage('Debug Environment Variables (Real Values)') {
             steps {
                 script {
-                    echo "DB_PASSWORD=${env.DB_PASSWORD}"
-                    echo "BOT_TOKEN=${env.BOT_TOKEN}"
+                    // Предупреждение: Опасно в Production!
+                    echo "DB_PASSWORD=${env.DB_PASSWORD.toString()}"
+                    echo "BOT_TOKEN=${env.BOT_TOKEN.toString()}"
                 }
             }
         }
