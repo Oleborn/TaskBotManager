@@ -5,9 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 
 @Data
@@ -16,8 +14,11 @@ import java.time.OffsetDateTime;
 @Builder
 public class TaskDto {
 
-
     private long id;
+
+    private long ownerId;
+
+    private long creatorId;
 
     private String title;
 
@@ -32,8 +33,4 @@ public class TaskDto {
     private boolean sent;
 
     private boolean updated;
-
-    private LocalTime localTime;
-
-    private LocalDate localDate;
 }

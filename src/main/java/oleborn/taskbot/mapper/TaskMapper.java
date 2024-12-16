@@ -1,16 +1,17 @@
 package oleborn.taskbot.mapper;
 
 import oleborn.taskbot.model.dto.TaskDto;
+import oleborn.taskbot.model.entities.Task;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
-import org.springframework.scheduling.config.Task;
 
 @Mapper(componentModel = "spring")  // Интеграция с Spring
 public interface TaskMapper {
-    
-    TaskMapper INSTANCE = Mappers.getMapper(TaskMapper.class);
 
     TaskDto toDto(Task task);
 
     Task toEntity(TaskDto taskDto);
+
+    void updateTaskEntityFromDto(TaskDto taskDto, @MappingTarget Task task);
 }

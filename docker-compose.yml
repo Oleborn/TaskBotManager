@@ -1,13 +1,36 @@
 version: '3.8'  # Указываем версию Docker Compose
 
 services:
+  spring-boot-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-TaskBot
+    ports:
+      - "8443:8443"
+    depends_on:
+      - db
+    networks:
+      - app-network
+
   db:
     image: postgres  # Используем официальный образ
     environment:
       POSTGRES_USER: postgres  # Имя пользователя PostgreSQL
-      POSTGRES_PASSWORD: postgres  # Пароль для пользователя
+      POSTGRES_PASSWORD: ${DB_PASSWORD}  # Пароль для пользователя
       POSTGRES_DB: TaskBot  # Имя базы данных, которая будет создана при старте контейнера
     container_name: TaskBotContainer  # Имя контейнера
     ports:
       - "5432:5432"  # Пробрасываем порт 5432, чтобы можно было подключиться к БД с хоста
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
 
