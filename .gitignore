@@ -1,22 +1,8 @@
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
-!.mvn/wrapper/maven-wrapper.properties
-!.mvnv
-!.mvnv.cmd
 !**/src/main/**/target/
 !**/src/test/**/target/
-
-/.mvn/
-**/pom.xml.tag
-**/pom.xml.releaseBackup
-**/pom.xml.versionsBackup
-**/pom.xml.next
-**/release.properties
-**/dependency-reduced-pom.xml
-*.class                         # Скомпилированные Java-классы
-*.jar                           # JAR файлы
-*.war                           # WAR файлы
 
 ### STS ###
 .apt_generated
