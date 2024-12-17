@@ -13,6 +13,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -50,11 +53,18 @@ public class TaskController {
                 .updated(false)
                 .build());
 
-        String formatTime = resultTime.format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
+        // Объединение LocalDate и LocalTime в LocalDateTime
+        LocalDateTime localDateTime = LocalDateTime.of(
+                LocalDate.parse(localDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                LocalTime.parse(localTime, DateTimeFormatter.ofPattern("HH:mm"))
+        );
+
+        // Форматирование в строку с нужным паттерном
+        String formattedTime = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
 
         outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
                 user_id,
-                OutputMessages.TASK_CREATED.getTextMessage().formatted(title, formatTime),
+                OutputMessages.TASK_CREATED.getTextMessage().formatted(title, formattedTime),
                 RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture(),
                 new InlineKeyboardBuilder()
                         .addButton("Сказать \"спасибо\"!", "thanks") //TODO тут можно поменять
