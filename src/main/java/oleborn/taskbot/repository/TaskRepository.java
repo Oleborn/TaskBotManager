@@ -13,4 +13,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query("SELECT t FROM Task t WHERE t.dateSending >= :time and t.sent = false")
     List<Task> findTasksToSend(OffsetDateTime time);
+
+    List<Task> findAllByOwnerId(Long ownerId);
 }

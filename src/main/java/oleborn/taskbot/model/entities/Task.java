@@ -33,14 +33,13 @@ public class Task {
     @Column(nullable = false)
     private long creatorId;
 
-    @Column(nullable = false, length = 20)
-    @Size(min = 1, max = 20)
+    @Column(nullable = false, length = 60)
+    @Size(min = 1, max = 60)
     @NotNull
     private String title;
 
     @Column(nullable = false, length = 300)
-    @Size(min = 1, max = 300)
-    @NotNull
+    @Size(max = 300)
     private String description;
 
     @Column(nullable = false, updatable = false)

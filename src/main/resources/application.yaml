@@ -3,10 +3,10 @@ spring:
     name: TaskBot
 
   datasource:
-    url: jdbc:postgresql://TaskBotContainer:5432/TaskBot
+    url: jdbc:postgresql://localhost:5432/TaskBot
     hikari:
       username: postgres
-      password: ${DB_PASSWORD}
+      password: postgres
 
   jpa:
     hibernate:
@@ -21,5 +21,5 @@ server:
 
 taskbot:
   name-bot: "TaskBot"
-  bot-token: ${BOT_TOKEN}
-  provider: "185.105.89.194"
+  bot-token: "7447286184:AAFIDdGk6TqaPgFaWmOcazb2N_ecHGu-3vc"
+  provider: "7e98-5-44-173-0.ngrok-free.app"

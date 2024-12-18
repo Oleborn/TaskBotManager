@@ -6,8 +6,6 @@ import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.model.entities.Task;
 import oleborn.taskbot.repository.TaskRepository;
 import oleborn.taskbot.service.interfaces.TaskService;
-import oleborn.taskbot.utils.OutputMessages;
-import oleborn.taskbot.utils.RandomPictures;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -54,6 +52,11 @@ public class TaskServiceImpl implements TaskService {
 
         return taskEntity.map(taskMapper::toDto)
                 .orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ"));
+    }
+
+    @Override
+    public List<Task> findAllTasks(Long id){
+        return new ArrayList<>(taskRepository.findAllByOwnerId(id));
     }
 
     @Override

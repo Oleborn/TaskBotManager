@@ -33,7 +33,12 @@ public enum OutputMessages {
                     
                     <b>Текст напоминания:</b> <i>%s</i>
                     """
-    );
+    ),
+    OUTPUT_MESSAGE_FOR_SAVES_TASKS("""
+            Вот весь список ваших напоминаний.
+            
+            Чтобы отредактировать выберите нажатием напоминание.
+            """);
 
     private final String textMessage;
 }

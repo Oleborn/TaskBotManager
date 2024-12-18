@@ -40,6 +40,15 @@ public class UpdateHandlerImpl implements UpdateHandler {
         }
         if (update.hasCallbackQuery()) {
             switch (update.getCallbackQuery().getData()){
+                case "saveTasks" -> outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
+                        update,
+                        OutputMessages.OUTPUT_MESSAGE_FOR_SAVES_TASKS.getTextMessage(),
+                        RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
+                        outputsMethods.createButtonInColumnSavedTasks(
+                                taskService.findAllTasks(update.getCallbackQuery().getFrom().getId())
+                        )
+                );
+
                 case "thanks" -> outputsMethods.outputMessageWithCapture(update, "Да пожалуйста \uD83E\uDEE1", RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture());
             }
         }
@@ -78,6 +87,8 @@ public class UpdateHandlerImpl implements UpdateHandler {
                      RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
                      new InlineKeyboardBuilder()
                              .addWebButton("Добавить напоминание", UrlWebForms.TASK.getUrl().formatted(provider))
+                             .nextRow()
+                             .addButton("Сохраненные напоминания", "saveTasks")
                              .nextRow()
                              .addWebButton("Профиль", "https://1a07-5-44-173-0.ngrok-free.app/task-form.html")
                              .build()
