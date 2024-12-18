@@ -25,7 +25,7 @@ public enum OutputMessages {
                     <i>Не забудьте отключить бесшумный режим!</i> \uD83D\uDE09
                     """
     ),
-    OUTPUT_MESSAGE_FOR_TASK(
+    RETURN_TASK(
             """
                     <b>Возвращаю Вам сохраненное напоминание</b>
                     
@@ -34,7 +34,7 @@ public enum OutputMessages {
                     <b>Текст напоминания:</b> <i>%s</i>
                     """
     ),
-    OUTPUT_MESSAGE_FOR_SAVES_TASKS("""
+    RETURN_SAVES_TASKS("""
             Вот весь список ваших напоминаний.
             
             Чтобы отредактировать выберите нажатием напоминание.

@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import oleborn.taskbot.mapper.TaskMapper;
 import oleborn.taskbot.model.dto.TaskDto;
+import oleborn.taskbot.model.entities.Task;
 import oleborn.taskbot.service.interfaces.TaskService;
 import oleborn.taskbot.utils.OutputMessages;
 import oleborn.taskbot.utils.RandomPictures;
 import oleborn.taskbot.utils.outputMethods.InlineKeyboardBuilder;
 import oleborn.taskbot.utils.outputMethods.OutputsMethods;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
@@ -25,6 +27,9 @@ public class TaskController {
 
     @Resource
     private TaskService taskService;
+    @Resource
+    private TaskMapper taskMapper;
+
     @Resource
     @Lazy
     private OutputsMethods outputsMethods;
@@ -71,5 +76,14 @@ public class TaskController {
                         .build()
                 );
         return null;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Task> getTask(@PathVariable Long id) {
+        Task task = taskMapper.toEntity(taskService.getTaskByID(id));
+        if (task != null) {
+            return ResponseEntity.ok(task);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }

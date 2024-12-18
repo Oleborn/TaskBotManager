@@ -1,57 +1,31 @@
 package oleborn.taskbot.updatehandler;
 
 import jakarta.annotation.Resource;
-import oleborn.taskbot.model.dto.TaskDto;
+import oleborn.taskbot.handlers.interfaces.CallbackQueryHandler;
+import oleborn.taskbot.handlers.interfaces.MessagesHandler;
 import oleborn.taskbot.repository.TaskRepository;
 import oleborn.taskbot.service.interfaces.ProfileService;
-import oleborn.taskbot.service.interfaces.TaskService;
-import oleborn.taskbot.utils.OutputMessages;
-import oleborn.taskbot.utils.RandomPictures;
-import oleborn.taskbot.utils.UrlWebForms;
-import oleborn.taskbot.utils.outputMethods.InlineKeyboardBuilder;
-import oleborn.taskbot.utils.outputMethods.OutputsMethods;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 public class UpdateHandlerImpl implements UpdateHandler {
 
-    @Value("${taskbot.provider}")
-    private String provider;
+    @Resource
+    private MessagesHandler messagesHandler;
 
     @Resource
-    private ProfileService profileService;
-    @Resource
-    private OutputsMethods outputsMethods;
-    @Resource
-    private TaskService taskService;
-    @Resource
-    private TaskRepository taskRepository;
+    private CallbackQueryHandler callbackQueryHandler;
 
     @Override
     public void handler(Update update) {
 
-       // ProfileDto profileDto = profileService.getProfileByID(update.getMessage().getFrom().getId());
-
-        if (update.hasMessage() && update.getMessage().getText().startsWith("/")){
-            handleCommand(update);
-            return;
+        if (update.hasMessage()) {
+            messagesHandler.messagesHandler(update);
+        } else if (update.hasCallbackQuery()) {
+            callbackQueryHandler.handlerCallbackQuery(update);
         }
-        if (update.hasCallbackQuery()) {
-            switch (update.getCallbackQuery().getData()){
-                case "saveTasks" -> outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
-                        update,
-                        OutputMessages.OUTPUT_MESSAGE_FOR_SAVES_TASKS.getTextMessage(),
-                        RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
-                        outputsMethods.createButtonInColumnSavedTasks(
-                                taskService.findAllTasks(update.getCallbackQuery().getFrom().getId())
-                        )
-                );
-
-                case "thanks" -> outputsMethods.outputMessageWithCapture(update, "Да пожалуйста \uD83E\uDEE1", RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture());
-            }
-        }
+    }
 
 //        switch (profileDto.getCommunicationStatus()){
 //            case DEFAULT -> as;
@@ -76,32 +50,14 @@ public class UpdateHandlerImpl implements UpdateHandler {
 //
 //            case BLOCKED -> as;
 //        }
-    }
 
-    private void handleCommand(Update update) {
+//    private void inputText(Update update) {
+//        if (update.hasMessage()) {
+//            TaskDto taskDto = TaskDto.builder()
+//                    .title(update.getMessage().getText())
+//                    .build();
+//
+//        }
+//    }
 
-         switch (update.getMessage().getText()) {
-             case "/start" -> outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
-                     update,
-                     OutputMessages.START_MESSAGE.getTextMessage(),
-                     RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
-                     new InlineKeyboardBuilder()
-                             .addWebButton("Добавить напоминание", UrlWebForms.TASK.getUrl().formatted(provider))
-                             .nextRow()
-                             .addButton("Сохраненные напоминания", "saveTasks")
-                             .nextRow()
-                             .addWebButton("Профиль", "https://1a07-5-44-173-0.ngrok-free.app/task-form.html")
-                             .build()
-                     );
-         }
-    }
-
-    private void inputText(Update update) {
-        if (update.hasMessage()) {
-            TaskDto taskDto = TaskDto.builder()
-                    .title(update.getMessage().getText())
-                    .build();
-
-        }
-    }
 }

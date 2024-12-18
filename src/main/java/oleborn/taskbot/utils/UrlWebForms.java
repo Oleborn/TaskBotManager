@@ -2,14 +2,14 @@ package oleborn.taskbot.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
 
 @AllArgsConstructor
 @Getter
 public enum UrlWebForms {
 
 
-    TASK("https://%s/task-form.html");
+    CREATE_TASK("https://%s/task-form.html"),
+    UPDATE_TASK("https://%s/updateTask_form.html");
 
     private final String url;
 }

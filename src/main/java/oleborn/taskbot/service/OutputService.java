@@ -20,7 +20,7 @@ public class OutputService {
         taskService.outputInMessageTask(taskDto);
         outputsMethods.outputMessageWithCapture(
                 taskDto.getOwnerId(),
-                OutputMessages.OUTPUT_MESSAGE_FOR_TASK.getTextMessage().formatted(taskDto.getTitle(), taskDto.getDescription()),
+                OutputMessages.RETURN_TASK.getTextMessage().formatted(taskDto.getTitle(), taskDto.getDescription()),
                 RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture()
         );
 
