@@ -1,8 +1,7 @@
-package oleborn.taskbot.handlers;
+package oleborn.taskbot.updatehandler.handlers;
 
 import jakarta.annotation.Resource;
-import oleborn.taskbot.handlers.interfaces.MessagesHandler;
-import oleborn.taskbot.service.interfaces.TaskService;
+import oleborn.taskbot.updatehandler.handlers.interfaces.CommandHandler;
 import oleborn.taskbot.utils.OutputMessages;
 import oleborn.taskbot.utils.RandomPictures;
 import oleborn.taskbot.utils.UrlWebForms;
@@ -13,26 +12,29 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-public class MessagesHandlerImpl implements MessagesHandler {
+public class CommandHandlerImpl implements CommandHandler {
 
     @Resource
     private OutputsMethods outputsMethods;
-    @Resource
-    private TaskService taskService;
 
     @Value("${taskbot.provider}")
     private String provider;
 
     @Override
-    public void messagesHandler(Update update) {
-        if (update.getMessage().getText().startsWith("/")) {
-            commandsHandler(update);
+    public void handleCommand(Update update) {
+
+        String command = null;
+        long id = 0;
+
+        if (update.hasMessage()) {
+            command = update.getMessage().getText();
+            id = update.getMessage().getChatId();
+        } else if (update.hasCallbackQuery()) {
+            command = update.getCallbackQuery().getData();
+            id = update.getCallbackQuery().getMessage().getChatId();
         }
 
-    }
-
-    private void commandsHandler(Update update) {
-        switch (update.getMessage().getText()) {
+        switch (command){
             case "/start" -> outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
                     update,
                     OutputMessages.START_MESSAGE.getTextMessage(),
@@ -45,6 +47,8 @@ public class MessagesHandlerImpl implements MessagesHandler {
                             .addWebButton("Профиль", "https://1a07-5-44-173-0.ngrok-free.app/task-form.html")
                             .build()
             );
+            default -> outputsMethods.outputMessage(id, "Неизвестная команда!");
         }
+
     }
 }

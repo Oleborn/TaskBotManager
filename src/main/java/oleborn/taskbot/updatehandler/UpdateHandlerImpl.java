@@ -1,10 +1,9 @@
 package oleborn.taskbot.updatehandler;
 
 import jakarta.annotation.Resource;
-import oleborn.taskbot.handlers.interfaces.CallbackQueryHandler;
-import oleborn.taskbot.handlers.interfaces.MessagesHandler;
-import oleborn.taskbot.repository.TaskRepository;
-import oleborn.taskbot.service.interfaces.ProfileService;
+import oleborn.taskbot.updatehandler.handlers.interfaces.CallbackQueryHandler;
+import oleborn.taskbot.updatehandler.handlers.interfaces.CommandHandler;
+import oleborn.taskbot.updatehandler.handlers.interfaces.MessagesHandler;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -19,7 +18,6 @@ public class UpdateHandlerImpl implements UpdateHandler {
 
     @Override
     public void handler(Update update) {
-
         if (update.hasMessage()) {
             messagesHandler.messagesHandler(update);
         } else if (update.hasCallbackQuery()) {

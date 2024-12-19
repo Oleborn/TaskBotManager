@@ -48,6 +48,8 @@ public class TaskController {
 
         OffsetDateTime resultTime = taskService.convertClientToServerTime(localDate, localTime, timeZone);
 
+        System.out.println(resultTime);
+
         taskService.createTask(TaskDto.builder()
                 .ownerId(recipient)
                 .creatorId(user_id)
@@ -79,8 +81,8 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTask(@PathVariable Long id) {
-        Task task = taskMapper.toEntity(taskService.getTaskByID(id));
+    public ResponseEntity<TaskDto> getTask(@PathVariable Long id) {
+        TaskDto task = taskService.getTaskByID(id);
         if (task != null) {
             return ResponseEntity.ok(task);
         }

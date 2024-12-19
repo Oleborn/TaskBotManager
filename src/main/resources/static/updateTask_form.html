@@ -72,6 +72,8 @@
 <body>
 <h2>Редактирование напоминания</h2>
 
+<h4>Введите новые желаемые значения!</h4>
+
 <div class="message-box" id="messageBox">
     Загрузка данных...
 </div>
@@ -140,11 +142,7 @@
                 // Заполняем форму данными задачи
                 document.getElementById('title').value = task.title;
                 document.getElementById('description').value = task.description;
-                document.getElementById('localDate').value = task.localDate;
-                document.getElementById('localTime').value = task.localTime;
 
-                // Загружаем список друзей и выделяем получателя
-                loadFriends(task.recipient);
                 showMessage("Данные успешно загружены", true);
             })
             .catch(error => {
@@ -152,28 +150,6 @@
                 showMessage("Ошибка загрузки задачи. Попробуйте позже.");
             });
     };
-
-    // Загрузка списка друзей
-    function loadFriends(selectedRecipient) {
-        fetch('/profile/friends') // Замените URL на нужный
-            .then(response => response.json())
-            .then(friends => {
-                const recipientSelect = document.getElementById('recipientSelect');
-                friends.forEach(friend => {
-                    const option = document.createElement('option');
-                    option.value = friend.id;
-                    option.textContent = friend.telegramNickname;
-                    if (friend.id === selectedRecipient) {
-                        option.selected = true;
-                    }
-                    recipientSelect.appendChild(option);
-                });
-            })
-            .catch(error => {
-                console.error("Ошибка загрузки списка друзей:", error);
-                showMessage("Ошибка загрузки списка друзей.");
-            });
-    }
 
     // Обработка отправки формы
     function handleSubmit(event) {

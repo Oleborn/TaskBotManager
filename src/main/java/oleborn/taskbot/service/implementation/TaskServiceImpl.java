@@ -46,6 +46,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public void deleteTask(Long taskId) {
+        taskRepository.deleteById(taskId);
+    }
+
+    @Override
     public TaskDto getTaskByID(Long id) {
 
         Optional<Task> taskEntity = taskRepository.findById(id);
