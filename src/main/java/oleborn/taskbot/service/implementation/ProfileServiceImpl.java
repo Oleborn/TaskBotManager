@@ -1,6 +1,7 @@
 package oleborn.taskbot.service.implementation;
 
 import jakarta.annotation.Resource;
+import jakarta.persistence.EntityNotFoundException;
 import oleborn.taskbot.mapper.FriendMapper;
 import oleborn.taskbot.mapper.ProfileMapper;
 import oleborn.taskbot.model.dto.FriendDto;
@@ -55,7 +56,7 @@ public class ProfileServiceImpl implements ProfileService {
         Optional<Profile> profileEntity = profileRepository.findById(id);
 
         return profileEntity.map(profileMapper::toDto)
-                .orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ"));
+                .orElseThrow(() -> new EntityNotFoundException("Профиль с ID " + id + " не найден"));
     }
 
     @Override

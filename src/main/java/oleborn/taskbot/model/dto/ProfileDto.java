@@ -19,7 +19,7 @@ public class ProfileDto {
     private String yourselfName;
     private String yourselfDateOfBirth;
     private String yourselfDescription;
-    private int yourselfGmt;
+    private String timeZoneId;
     private List<Friend> listFriends;
     private String nickName;
     private Long telegramId;

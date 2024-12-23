@@ -6,8 +6,6 @@ import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.model.entities.Task;
 import oleborn.taskbot.repository.TaskRepository;
 import oleborn.taskbot.service.interfaces.TaskService;
-import oleborn.taskbot.utils.OutputMessages;
-import oleborn.taskbot.utils.RandomPictures;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -48,12 +46,22 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public void deleteTask(Long taskId) {
+        taskRepository.deleteById(taskId);
+    }
+
+    @Override
     public TaskDto getTaskByID(Long id) {
 
         Optional<Task> taskEntity = taskRepository.findById(id);
 
         return taskEntity.map(taskMapper::toDto)
                 .orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ"));
+    }
+
+    @Override
+    public List<Task> findAllTasks(Long id){
+        return new ArrayList<>(taskRepository.findAllByOwnerId(id));
     }
 
     @Override
@@ -95,6 +103,7 @@ public class TaskServiceImpl implements TaskService {
                 .ownerId(taskDto.getOwnerId())
                 .creatorId(taskDto.getCreatorId())
                 .title(taskDto.getTitle())
+                .timeZoneOwner(taskDto.getTimeZoneOwner())
                 .description(taskDto.getDescription())
                 .dateCreated(taskDto.getDateCreated())
                 .dateModified(LocalDateTime.now())

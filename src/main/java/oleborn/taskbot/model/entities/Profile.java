@@ -35,9 +35,8 @@ public class Profile {
     @Column(length = 400)
     private String yourselfDescription;
 
-    @Column(length = 1)
-    @Size(min = 1, max = 1)
-    private int yourselfGmt;
+    @Column(nullable = false)
+    private String timeZoneId;
 
     @ManyToMany
     @JoinTable(

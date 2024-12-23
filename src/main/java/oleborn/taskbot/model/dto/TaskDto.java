@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 @Data
 @AllArgsConstructor
@@ -29,6 +30,8 @@ public class TaskDto {
     private LocalDateTime dateModified;
 
     private OffsetDateTime dateSending;
+
+    private String timeZoneOwner;
 
     private boolean sent;
 

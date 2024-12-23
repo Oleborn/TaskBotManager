@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Task Form</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin-top: 10px;
+        }
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        button {
+            background-color: #0088cc;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0077b3;
+        }
+        .message-box {
+            background: #eef4fc;
+            border: 1px solid #cde4f9;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 20px;
+            color: #0056a3;
+        }
+        @media (max-width: 600px) {
+            input, select, textarea {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+<h2>Редактирование напоминания</h2>
+
+<h4>Введите новые желаемые значения!</h4>
+
+<div class="message-box" id="messageBox">
+    Загрузка данных...
+</div>
+
+<form id="taskForm" action="/task/update" method="POST" onsubmit="return handleSubmit(event)">
+    <!-- Поле для ID задачи -->
+    <input type="hidden" id="task_id" name="task_id" value="">
+    <input type="hidden" id="timeZone" name="timeZone" value="">
+    <input type="hidden" id="recipient" name="recipient" value="">
+
+    <!-- Остальные поля формы -->
+    <label for="title">Заголовок:</label>
+    <input type="text" id="title" name="title" placeholder="Введите текст заголовка" required>
+
+    <label for="description">Описание:</label>
+    <textarea id="description" name="description" placeholder="Введите текст напоминания"></textarea>
+
+    <label for="localDate">Дата напоминания:</label>
+    <input type="date" id="localDate" name="localDate" required>
+
+    <label for="localTime">Время:</label>
+    <input type="time" id="localTime" name="localTime" required>
+
+    <label for="recipient">Кому предназначено:</label>
+    <select id="recipientSelect" name="recipient" required>
+        <option value="self">Мне</option>
+    </select>
+
+    <button type="submit">Сохранить изменения</button>
+</form>
+
+<script>
+    // Функция для извлечения параметра из URL
+    function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
+    }
+
+    // Показывает сообщение в верхней части формы
+    function showMessage(message, success = false) {
+        const messageBox = document.getElementById('messageBox');
+        messageBox.textContent = message;
+        messageBox.style.color = success ? "#007700" : "#a30000";
+        messageBox.style.borderColor = success ? "#8bc34a" : "#f44336";
+        messageBox.style.backgroundColor = success ? "#e8f5e9" : "#ffebee";
+    }
+
+    // Обработка загрузки страницы
+    window.onload = function () {
+        const taskId = getQueryParam("task_id"); // Получаем ID из URL
+        if (!taskId) {
+            showMessage("Ошибка: ID задачи не указан в URL.");
+            return;
+        }
+
+        // Устанавливаем ID задачи в скрытое поле формы
+        document.getElementById('task_id').value = taskId;
+
+        // Загружаем данные задачи с сервера
+        fetch(`/task/${taskId}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Ошибка загрузки задачи");
+                return response.json();
+            })
+            .then(task => {
+                // Заполняем форму данными задачи
+                document.getElementById('title').value = task.title;
+                document.getElementById('description').value = task.description;
+
+                showMessage("Данные успешно загружены", true);
+            })
+            .catch(error => {
+                console.error("Ошибка загрузки задачи:", error);
+                showMessage("Ошибка загрузки задачи. Попробуйте позже.");
+            });
+    };
+
+    // Обработка отправки формы
+    function handleSubmit(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("Ошибка обновления задачи");
+                return response.text();
+            })
+            .then(() => {
+                showMessage("Задача успешно обновлена!", true);
+                setTimeout(() => Telegram.WebApp.close(), 2000); // Закрыть WebApp через 2 секунды
+            })
+            .catch(error => {
+                console.error("Ошибка отправки формы:", error);
+                showMessage("Ошибка при сохранении изменений. Попробуйте еще раз.");
+            });
+    }
+</script>
+
+</body>
+</html>

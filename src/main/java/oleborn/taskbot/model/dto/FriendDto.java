@@ -20,4 +20,6 @@ public class FriendDto {
     private String telegramNickname;
 
     private Boolean isAllowedSendTasks;
+
+    private String timeZoneId;
 }

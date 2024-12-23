@@ -1,6 +1,7 @@
 package oleborn.taskbot.service.interfaces;
 
 import oleborn.taskbot.model.dto.TaskDto;
+import oleborn.taskbot.model.entities.Task;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -14,7 +15,11 @@ public interface TaskService {
 
     void deleteTask(TaskDto taskDto);
 
+    void deleteTask(Long id);
+
     TaskDto getTaskByID(Long id);
+
+    List<Task> findAllTasks(Long id);
 
     LocalDateTime createLocalDateTime(String localDate, String localTime);
 
