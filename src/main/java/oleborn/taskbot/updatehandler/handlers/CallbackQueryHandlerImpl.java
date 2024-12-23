@@ -90,8 +90,8 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                         .addButton("Удалить напоминание", "deleteTask_"+name[1])
                         .build()
         );
-        System.out.println(taskDto.getDateSending());
     }
+
     private void deleteMethod(Update update) {
         String[] name = update.getCallbackQuery().getData().split("_");
         TaskDto taskDto = taskService.getTaskByID(Long.valueOf(name[1]));
