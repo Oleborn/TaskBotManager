@@ -31,4 +31,7 @@ public class Friend {
     @NotNull
     private Boolean isAllowedSendTasks;
 
+    @Column(nullable = false)
+    private String timeZoneId;
+
 }

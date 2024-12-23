@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 @Component
@@ -76,7 +77,8 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                         taskDto.getTitle(),
                         taskDto.getDescription(),
                         taskDto.getDateCreated().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")),
-                        taskDto.getDateSending().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")),
+                        taskDto.getDateSending().atZoneSameInstant(ZoneId.of(taskDto.getTimeZoneOwner()))
+                                .format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")),
                         taskDto.isSent() ? "Отправлено!" : "Не отправлено"
 //                        profileService.getProfileByID(taskDto.getCreatorId()).getNickName(), //TODO доделать добавление профилей
 //                        profileService.getProfileByID(taskDto.getOwnerId()).getNickName()

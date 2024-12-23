@@ -103,6 +103,7 @@ public class TaskServiceImpl implements TaskService {
                 .ownerId(taskDto.getOwnerId())
                 .creatorId(taskDto.getCreatorId())
                 .title(taskDto.getTitle())
+                .timeZoneOwner(taskDto.getTimeZoneOwner())
                 .description(taskDto.getDescription())
                 .dateCreated(taskDto.getDateCreated())
                 .dateModified(LocalDateTime.now())

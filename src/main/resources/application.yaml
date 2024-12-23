@@ -22,4 +22,4 @@ server:
 taskbot:
   name-bot: "TaskBot"
   bot-token: "7447286184:AAFIDdGk6TqaPgFaWmOcazb2N_ecHGu-3vc"
-  provider: "7e98-5-44-173-0.ngrok-free.app"
+  provider: "d196-5-44-173-0.ngrok-free.app"

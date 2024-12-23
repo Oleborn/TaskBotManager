@@ -3,8 +3,10 @@ package oleborn.taskbot.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import oleborn.taskbot.mapper.TaskMapper;
+import oleborn.taskbot.model.dto.ProfileDto;
 import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.model.entities.Task;
+import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.service.interfaces.TaskService;
 import oleborn.taskbot.utils.OutputMessages;
 import oleborn.taskbot.utils.RandomPictures;
@@ -15,10 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 
 @RestController
@@ -29,6 +28,8 @@ public class TaskController {
     private TaskService taskService;
     @Resource
     private TaskMapper taskMapper;
+    @Resource
+    private ProfileService profileService;
 
     @Resource
     @Lazy
@@ -48,14 +49,14 @@ public class TaskController {
 
         OffsetDateTime resultTime = taskService.convertClientToServerTime(localDate, localTime, timeZone);
 
-        System.out.println(resultTime);
-
         taskService.createTask(TaskDto.builder()
                 .ownerId(recipient)
                 .creatorId(user_id)
                 .title(title)
                 .description(description)
                 .dateSending(resultTime)
+                //profileService.getProfileByID(recipient).getTimeZoneId();
+                .timeZoneOwner(timeZone) //TODO тут должен быть часовой пояс того кому придет уведомление
                 .sent(false)
                 .updated(false)
                 .build());
