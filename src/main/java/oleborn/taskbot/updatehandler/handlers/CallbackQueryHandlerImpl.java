@@ -76,7 +76,7 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                 OutputMessages.RETURN_UPDATE_TASK.getTextMessage().formatted(
                         taskDto.getTitle(),
                         taskDto.getDescription(),
-                        taskDto.getDateCreated().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")),
+                        taskDto.getDateCreated().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")), //TODO дату тоже обрабатывать
                         taskDto.getDateSending().atZoneSameInstant(ZoneId.of(taskDto.getTimeZoneOwner()))
                                 .format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")),
                         taskDto.isSent() ? "Отправлено!" : "Не отправлено"

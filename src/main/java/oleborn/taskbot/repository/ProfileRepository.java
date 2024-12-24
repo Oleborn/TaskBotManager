@@ -1,6 +1,5 @@
 package oleborn.taskbot.repository;
 
-import oleborn.taskbot.model.entities.Friend;
 import oleborn.taskbot.model.entities.Profile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
-    @Query("SELECT p.listFriends FROM Profile p WHERE p.id = :id")
-    List<Friend> findFriendsById(@Param("id") Long id);
+    @Query("SELECT p.listProfilesWhoCanSendMessages FROM Profile p WHERE p.telegramId = :id")
+    List<Profile> findFriendsById(@Param("id") Long id);
 
 }

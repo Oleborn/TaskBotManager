@@ -35,7 +35,6 @@ public class TaskController {
     @Lazy
     private OutputsMethods outputsMethods;
 
-    // POST-запрос для получения данных задачи
     @PostMapping
     public ResponseEntity<Void> createTask(@RequestParam long user_id,
                                            @RequestParam long recipient,
@@ -78,7 +77,53 @@ public class TaskController {
                         .addButton("Сказать \"спасибо\"!", "thanks") //TODO тут можно поменять
                         .build()
                 );
-        return null;
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<Void> updateTask(@RequestParam long user_id,
+                                           @RequestParam long task_id,
+                                           @RequestParam long recipient,
+                                           @RequestParam String title,
+                                           @RequestParam String description,
+                                           @RequestParam String localDate,
+                                           @RequestParam String localTime,
+                                           @RequestParam String timeZone
+    ){
+
+        OffsetDateTime resultTime = taskService.convertClientToServerTime(localDate, localTime, timeZone);
+
+        taskService.updateTask(TaskDto.builder()
+                .id(task_id)
+                .ownerId(recipient)
+                .creatorId(user_id)
+                .title(title)
+                .description(description)
+                .dateSending(resultTime)
+                //profileService.getProfileByID(recipient).getTimeZoneId();
+                .timeZoneOwner(timeZone) //TODO тут должен быть часовой пояс того кому придет уведомление
+                .sent(false)
+                .updated(true)
+                .build());
+
+        // Объединение LocalDate и LocalTime в LocalDateTime
+        LocalDateTime localDateTime = LocalDateTime.of(
+                LocalDate.parse(localDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                LocalTime.parse(localTime, DateTimeFormatter.ofPattern("HH:mm"))
+        );
+
+        // Форматирование в строку с нужным паттерном
+        String formattedTime = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
+
+        outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
+                user_id,
+                OutputMessages.TASK_UPDATED.getTextMessage().formatted(title, formattedTime),
+                RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture(),
+                new InlineKeyboardBuilder()
+                        .addButton("Сказать \"спасибо\"!", "thanks") //TODO тут можно поменять
+                        .build()
+        );
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")

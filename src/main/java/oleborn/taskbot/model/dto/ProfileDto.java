@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import oleborn.taskbot.model.entities.Friend;
+import oleborn.taskbot.model.entities.Profile;
 import oleborn.taskbot.utils.CommunicationStatus;
 
 import java.util.List;
@@ -15,13 +15,12 @@ import java.util.List;
 @Builder
 public class ProfileDto {
 
-    private long id;
     private String yourselfName;
     private String yourselfDateOfBirth;
     private String yourselfDescription;
-    private String timeZoneId;
-    private List<Friend> listFriends;
+    private List<Profile> listProfilesWhoCanSendMessages;
     private String nickName;
     private Long telegramId;
     private CommunicationStatus communicationStatus;
+    private String timeZone;
 }
