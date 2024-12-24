@@ -2,6 +2,7 @@ package oleborn.taskbot.service.interfaces;
 
 
 import oleborn.taskbot.model.dto.ProfileDto;
+import oleborn.taskbot.model.dto.ProfileSelfDataDto;
 import oleborn.taskbot.model.entities.Profile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -19,5 +20,7 @@ public interface ProfileService {
     ProfileDto getProfileByID(Long id);
 
     List<ProfileDto> getFriends(Long id);
+
+    void setSelfDateProfile(ProfileSelfDataDto dto);
 
 }

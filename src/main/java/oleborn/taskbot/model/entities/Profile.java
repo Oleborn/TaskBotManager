@@ -19,9 +19,6 @@ import java.util.List;
 @Builder
 public class Profile {
 
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private long id;
 
     //---- Информация которую пользователь вводит по желанию ----//
 

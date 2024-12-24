@@ -2,11 +2,10 @@ package oleborn.taskbot.controller;
 
 import jakarta.annotation.Resource;
 import oleborn.taskbot.model.dto.ProfileDto;
+import oleborn.taskbot.model.dto.ProfileSelfDataDto;
 import oleborn.taskbot.service.interfaces.ProfileService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,5 +19,11 @@ public class ProfileController {
     @GetMapping("/{userId}/friends")
     public List<ProfileDto> getFriends(@PathVariable Long userId) {
         return profileService.getFriends(userId);
+    }
+
+    @PostMapping("/data")
+    public ResponseEntity<Void> getProfile(@RequestBody ProfileSelfDataDto dto) {
+        profileService.setSelfDateProfile(dto);
+        return ResponseEntity.ok().build();
     }
 }

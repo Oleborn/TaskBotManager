@@ -7,6 +7,7 @@ import oleborn.taskbot.updatehandler.handlers.interfaces.CallbackQueryHandler;
 import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.service.interfaces.TaskService;
 import oleborn.taskbot.updatehandler.handlers.interfaces.CommandHandler;
+import oleborn.taskbot.utils.FormatDate;
 import oleborn.taskbot.utils.OutputMessages;
 import oleborn.taskbot.utils.RandomPictures;
 import oleborn.taskbot.utils.UrlWebForms;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Component
@@ -65,6 +67,23 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
             );
             case "thanks" ->
                     outputsMethods.outputMessageWithCapture(update, "Да пожалуйста \uD83E\uDEE1", RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture());
+            case "profile" ->
+                outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
+                        update,
+                        OutputMessages.RETURN_PROFILE.getTextMessage()
+                                .formatted(update.getCallbackQuery().getMessage().getChatId(), update.getCallbackQuery().getFrom().getId()),
+                        RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
+                        new InlineKeyboardBuilder()
+                                .addWebButton("Добавить личные данные", UrlWebForms.SELF_DATA.getUrl())
+                                .nextRow()
+                                .addButton("Список друзей", "list_friend")
+                                .build()
+                        // выходит список друзей, тех кто может направлять напоминания
+                        // 2 кнопки - добавить и редактировать
+                        // при добавлении строка ждет ник телеграмма, проверяет в БД на наличие и добавляет
+                        // при редактировании выходит текст и кнопками список лиц
+                        // при выборе одного из списка загружается инфа и кнопки удалить и назад
+                );
         }
     }
 
@@ -76,9 +95,11 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                 OutputMessages.RETURN_UPDATE_TASK.getTextMessage().formatted(
                         taskDto.getTitle(),
                         taskDto.getDescription(),
-                        taskDto.getDateCreated().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")), //TODO дату тоже обрабатывать
+                        taskDto.getDateCreated().atZone(ZoneId.systemDefault())
+                                .withZoneSameInstant(ZoneId.of(taskDto.getTimeZoneOwner()))
+                                .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
                         taskDto.getDateSending().atZoneSameInstant(ZoneId.of(taskDto.getTimeZoneOwner()))
-                                .format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")),
+                                .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
                         taskDto.isSent() ? "Отправлено!" : "Не отправлено"
 //                        profileService.getProfileByID(taskDto.getCreatorId()).getNickName(), //TODO доделать добавление профилей
 //                        profileService.getProfileByID(taskDto.getOwnerId()).getNickName()

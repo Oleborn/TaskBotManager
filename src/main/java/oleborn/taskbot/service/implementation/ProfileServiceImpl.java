@@ -4,6 +4,7 @@ import jakarta.annotation.Resource;
 import jakarta.persistence.EntityNotFoundException;
 import oleborn.taskbot.mapper.ProfileMapper;
 import oleborn.taskbot.model.dto.ProfileDto;
+import oleborn.taskbot.model.dto.ProfileSelfDataDto;
 import oleborn.taskbot.model.entities.Profile;
 import oleborn.taskbot.repository.ProfileRepository;
 import oleborn.taskbot.service.interfaces.ProfileService;
@@ -31,13 +32,13 @@ public class ProfileServiceImpl implements ProfileService {
     public void createProfile(Update update) {
         Optional<Profile> p = profileRepository.findById(update.getMessage().getChatId());
         if (p.isEmpty()) {
-            ProfileDto profileDto = ProfileDto.builder()
-                    .nickName(update.getMessage().getFrom().getUserName())
-                    .telegramId(update.getMessage().getChatId())
-                    .communicationStatus(CommunicationStatus.DEFAULT)
-                    .build();
-
-            profileRepository.save(profileMapper.fromDto(profileDto));
+            profileRepository.save(profileMapper.fromDto(
+                    ProfileDto.builder()
+                            .nickName(update.getMessage().getFrom().getUserName())
+                            .telegramId(update.getMessage().getChatId())
+                            .communicationStatus(CommunicationStatus.DEFAULT)
+                            .build()
+            ));
         } else {
             updateProfile(profileMapper.toDto(p.get()));
         }
@@ -72,5 +73,20 @@ public class ProfileServiceImpl implements ProfileService {
         return profileRepository.findFriendsById(id).stream()
                 .map(profile -> profileMapper.toDto(profile))
                 .toList();
+    }
+
+    @Override
+    public void setSelfDateProfile(ProfileSelfDataDto dto) {
+        Optional<Profile> profileEntity = profileRepository.findById(dto.getTelegramId());
+
+        if (profileEntity.isPresent()) {
+            ProfileDto profileDto = ProfileDto.builder()
+                    .yourselfName(dto.getYourselfName())
+                    .yourselfDateOfBirth(dto.getYourselfDateOfBirth())
+                    .yourselfDescription(dto.getYourselfDescription())
+                    .build();
+
+            profileRepository.save(profileMapper.fromDto(profileDto));
+        }
     }
 }

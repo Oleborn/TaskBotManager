@@ -10,5 +10,11 @@ public class TaskBotApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(TaskBotApplication.class, args);
+
+		/*
+		TODO:
+		1. попробовать все ответы сделать исчезающими
+		2. вынести в отдельный метод все методы ответов
+		 */
 	}
 }
