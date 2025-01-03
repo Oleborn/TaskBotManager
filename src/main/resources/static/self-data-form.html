@@ -9,7 +9,12 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
+            margin: 0;
             padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
         }
         form {
             background: #fff;
@@ -26,16 +31,19 @@
             margin-top: 10px;
         }
         input, textarea, button {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
             width: 100%;
             padding: 10px;
             margin-top: 8px;
             margin-bottom: 20px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 16px;
+            box-sizing: border-box;
         }
         textarea {
             height: 120px;
+            resize: vertical; /* Возможность изменения размера пользователем */
         }
         button {
             background-color: #0088cc;
@@ -55,23 +63,31 @@
             margin-bottom: 20px;
             color: #0056a3;
         }
+        @media (max-width: 600px) {
+            input, select, textarea {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
 <h2>Введите данные в профиль</h2>
-<div class="message-box" id="messageBox">Введите данные для редактирования профиля.</div>
+<div class="message-box" id="messageBox">Введите данные для редактирования профиля. Часовой пояс обязателен для заполнения.</div>
 
 <form id="profileForm" onsubmit="return handleSubmit(event)">
     <input type="hidden" id="user_id" name="user_id" value="">
 
     <label for="yourselfName">Ваше имя:</label>
-    <input type="text" id="yourselfName" name="yourselfName" placeholder="Введите ваше имя" required>
+    <input type="text" id="yourselfName" name="yourselfName" placeholder="Введите ваше имя">
 
     <label for="yourselfDateOfBirth">Дата рождения:</label>
-    <input type="text" id="yourselfDateOfBirth" name="yourselfDateOfBirth" placeholder="Введите дату Вашего рождения" required>
+    <input type="text" id="yourselfDateOfBirth" name="yourselfDateOfBirth" placeholder="Введите дату Вашего рождения">
 
     <label for="yourselfDescription">Описание:</label>
     <textarea id="yourselfDescription" name="yourselfDescription" placeholder="Введите описание"></textarea>
+
+    <label for="timeZone">Часовой пояс (обязательно):</label>
+    <input type="text" id="timeZone" name="timeZone" placeholder="Часовой пояс к МСК (Например для МСК +0)" required>
 
     <button type="submit">Сохранить</button>
 </form>
@@ -95,12 +111,19 @@
         const yourselfName = document.getElementById('yourselfName').value;
         const yourselfDateOfBirth = document.getElementById('yourselfDateOfBirth').value;
         const yourselfDescription = document.getElementById('yourselfDescription').value;
+        const timeZone = document.getElementById('timeZone').value;
+
+        if (!timeZone) {
+            showMessage("Часовой пояс обязателен для заполнения.");
+            return;
+        }
 
         const data = {
             user_id: userId,
-            yourselfName,
-            yourselfDateOfBirth,
-            yourselfDescription
+            yourselfName: yourselfName || null,
+            yourselfDateOfBirth: yourselfDateOfBirth || null,
+            yourselfDescription: yourselfDescription || null,
+            timeZone
         };
 
         fetch('/profile/', {

@@ -2,6 +2,7 @@ package oleborn.taskbot.updatehandler.handlers;
 
 import jakarta.annotation.Resource;
 import oleborn.taskbot.model.dto.ProfileDto;
+import oleborn.taskbot.model.entities.Profile;
 import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.updatehandler.handlers.interfaces.CallbackQueryHandler;
 import oleborn.taskbot.model.dto.TaskDto;
@@ -20,6 +21,10 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static oleborn.taskbot.utils.OutputMessages.*;
 
 @Component
 public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
@@ -67,23 +72,48 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
             );
             case "thanks" ->
                     outputsMethods.outputMessageWithCapture(update, "Да пожалуйста \uD83E\uDEE1", RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture());
-            case "profile" ->
+            case "profile" -> {
+                ProfileDto profileDto = profileService.getProfileByID(update.getCallbackQuery().getFrom().getId());
+
+                String outputMessages;
+
+                if (profileDto.getListProfilesWhoCanSendMessages().isEmpty()){
+                    outputMessages = RETURN_PROFILE_NO_FRIENDS.getTextMessage();
+                } else {
+                    outputMessages = RETURN_PROFILE_FRIENDS.getTextMessage().formatted(
+                            profileDto.getListProfilesWhoCanSendMessages().stream()
+                                    .map((Profile t) -> profileDto.getNickName()) // Извлекаем nickName
+                                    .filter(Objects::nonNull)    // Убираем возможные null значения
+                                    .collect(Collectors.joining("\n,")) // Соединяем через перенос строки
+                    );
+                }
+
                 outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
                         update,
-                        OutputMessages.RETURN_PROFILE.getTextMessage()
-                                .formatted(update.getCallbackQuery().getMessage().getChatId(), update.getCallbackQuery().getFrom().getId()),
+                        RETURN_PROFILE.getTextMessage().formatted(
+                                profileDto.getYourselfName() != null ? profileDto.getYourselfName() : "Пока не заполнено",
+                                profileDto.getYourselfDateOfBirth() != null ? profileDto.getYourselfDateOfBirth() : "Пока не заполнено",
+                                profileDto.getYourselfDescription() != null ? profileDto.getYourselfDescription() : "Пока не заполнено",
+                                update.getCallbackQuery().getFrom().getUserName(),
+                                update.getCallbackQuery().getFrom().getId(),
+                                outputMessages
+                        ),
                         RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
                         new InlineKeyboardBuilder()
-                                .addWebButton("Добавить личные данные", UrlWebForms.SELF_DATA.getUrl())
+                                .addWebButton("Изменить личные данные", UrlWebForms.SELF_DATA.getUrl().formatted(provider))
                                 .nextRow()
-                                .addButton("Список друзей", "list_friend")
+                                .addButton("Добавить друзей в список","list_friend_add")
+                                .nextRow()
+                                .addButton("Изменить список друзей", "list_friend_update")
                                 .build()
-                        // выходит список друзей, тех кто может направлять напоминания
-                        // 2 кнопки - добавить и редактировать
-                        // при добавлении строка ждет ник телеграмма, проверяет в БД на наличие и добавляет
-                        // при редактировании выходит текст и кнопками список лиц
-                        // при выборе одного из списка загружается инфа и кнопки удалить и назад
+
                 );
+            }
+                // выходит список друзей, тех кто может направлять напоминания тебе
+                // 2 кнопки - добавить и редактировать
+                // при добавлении строка ждет ник телеграмма, проверяет в БД на наличие и добавляет
+                // при редактировании выходит текст и кнопками список лиц
+                // при выборе одного из списка загружается инфа и кнопки удалить и назад
         }
     }
 

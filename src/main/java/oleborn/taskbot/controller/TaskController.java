@@ -1,11 +1,8 @@
 package oleborn.taskbot.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import oleborn.taskbot.mapper.TaskMapper;
-import oleborn.taskbot.model.dto.ProfileDto;
 import oleborn.taskbot.model.dto.TaskDto;
-import oleborn.taskbot.model.entities.Task;
 import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.service.interfaces.TaskService;
 import oleborn.taskbot.utils.OutputMessages;
@@ -14,10 +11,13 @@ import oleborn.taskbot.utils.outputMethods.InlineKeyboardBuilder;
 import oleborn.taskbot.utils.outputMethods.OutputsMethods;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 @RestController
@@ -43,8 +43,7 @@ public class TaskController {
                                            @RequestParam String localDate,
                                            @RequestParam String localTime,
                                            @RequestParam String timeZone
-    )
-    {
+    ) {
 
         OffsetDateTime resultTime = taskService.convertClientToServerTime(localDate, localTime, timeZone);
 
@@ -76,7 +75,7 @@ public class TaskController {
                 new InlineKeyboardBuilder()
                         .addButton("Сказать \"спасибо\"!", "thanks") //TODO тут можно поменять
                         .build()
-                );
+        );
         return ResponseEntity.ok().build();
     }
 
@@ -89,7 +88,7 @@ public class TaskController {
                                            @RequestParam String localDate,
                                            @RequestParam String localTime,
                                            @RequestParam String timeZone
-    ){
+    ) {
 
         OffsetDateTime resultTime = taskService.convertClientToServerTime(localDate, localTime, timeZone);
 

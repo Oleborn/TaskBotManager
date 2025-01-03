@@ -49,7 +49,7 @@ public class CommandHandlerImpl implements CommandHandler {
                                 .nextRow()
                                 .addButton("Сохраненные напоминания", "saveTasks")
                                 .nextRow()
-                                .addWebButton("Профиль", "https://1a07-5-44-173-0.ngrok-free.app/task-form.html")
+                                .addButton("Профиль", "profile")
                                 .build()
                 );
                 profileService.createProfile(update);

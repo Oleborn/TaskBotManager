@@ -9,5 +9,6 @@ public class ProfileSelfDataDto {
     private String yourselfName;
     private String yourselfDateOfBirth;
     private String yourselfDescription;
+    private String timeZone;
 
 }

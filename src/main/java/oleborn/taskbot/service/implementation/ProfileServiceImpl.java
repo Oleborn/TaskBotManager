@@ -30,6 +30,8 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public void createProfile(Update update) {
+        System.out.println(update.getMessage().getChatId());
+
         Optional<Profile> p = profileRepository.findById(update.getMessage().getChatId());
         if (p.isEmpty()) {
             profileRepository.save(profileMapper.fromDto(
@@ -84,6 +86,7 @@ public class ProfileServiceImpl implements ProfileService {
                     .yourselfName(dto.getYourselfName())
                     .yourselfDateOfBirth(dto.getYourselfDateOfBirth())
                     .yourselfDescription(dto.getYourselfDescription())
+                    .timeZone(dto.getTimeZone())
                     .build();
 
             profileRepository.save(profileMapper.fromDto(profileDto));

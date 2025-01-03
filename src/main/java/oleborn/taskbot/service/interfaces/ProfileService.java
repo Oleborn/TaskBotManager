@@ -3,7 +3,6 @@ package oleborn.taskbot.service.interfaces;
 
 import oleborn.taskbot.model.dto.ProfileDto;
 import oleborn.taskbot.model.dto.ProfileSelfDataDto;
-import oleborn.taskbot.model.entities.Profile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
