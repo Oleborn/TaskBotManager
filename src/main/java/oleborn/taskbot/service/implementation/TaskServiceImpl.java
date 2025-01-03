@@ -32,6 +32,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskDto updateTask(TaskDto taskDto) {
+
         Task taskEntity = taskRepository.findById(taskDto.getId())
                 .orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ"));
 
@@ -55,8 +56,7 @@ public class TaskServiceImpl implements TaskService {
 
         Optional<Task> taskEntity = taskRepository.findById(id);
 
-        return taskEntity.map(taskMapper::toDto)
-                .orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ"));
+        return taskEntity.map(taskMapper::toDto).orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ"));
     }
 
     @Override

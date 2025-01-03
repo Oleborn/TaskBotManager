@@ -99,11 +99,17 @@ public class OutputsMethods extends Bot {
     public void outputMessageWithCaptureAndInlineKeyboard(Update update, String text, String namePhoto, InlineKeyboardMarkup kb) {
         InputFile inputFile = new InputFile();
         InputStream is = getClass().getClassLoader().getResourceAsStream("images/" + namePhoto + ".jpg");
+        if (is == null) {
+            log.error("Файл изображения не найден: images/{}.jpg", namePhoto);
+            return;
+        }
         inputFile.setMedia(is, namePhoto);
+
+        long id = update.hasMessage() ? update.getMessage().getChatId() : update.getCallbackQuery().getMessage().getChatId();
 
         SendPhoto sendPhoto = SendPhoto.builder()
                 .photo(inputFile)
-                .chatId(update.hasMessage() ? update.getMessage().getChatId() : update.getCallbackQuery().getMessage().getChatId())
+                .chatId(id)
                 .parseMode("HTML")
                 .caption(text)
                 .replyMarkup(kb)

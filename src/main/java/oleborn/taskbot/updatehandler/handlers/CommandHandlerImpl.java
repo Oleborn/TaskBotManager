@@ -1,6 +1,7 @@
 package oleborn.taskbot.updatehandler.handlers;
 
 import jakarta.annotation.Resource;
+import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.updatehandler.handlers.interfaces.CommandHandler;
 import oleborn.taskbot.utils.OutputMessages;
 import oleborn.taskbot.utils.RandomPictures;
@@ -16,6 +17,9 @@ public class CommandHandlerImpl implements CommandHandler {
 
     @Resource
     private OutputsMethods outputsMethods;
+
+    @Resource
+    private ProfileService profileService;
 
     @Value("${taskbot.provider}")
     private String provider;
@@ -34,19 +38,22 @@ public class CommandHandlerImpl implements CommandHandler {
             id = update.getCallbackQuery().getMessage().getChatId();
         }
 
-        switch (command){
-            case "/start" -> outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
-                    update,
-                    OutputMessages.START_MESSAGE.getTextMessage(),
-                    RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
-                    new InlineKeyboardBuilder()
-                            .addWebButton("Добавить напоминание", UrlWebForms.CREATE_TASK.getUrl().formatted(provider))
-                            .nextRow()
-                            .addButton("Сохраненные напоминания", "saveTasks")
-                            .nextRow()
-                            .addWebButton("Профиль", "https://1a07-5-44-173-0.ngrok-free.app/task-form.html")
-                            .build()
-            );
+        switch (command) {
+            case "/start" -> {
+                outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
+                        update,
+                        OutputMessages.START_MESSAGE.getTextMessage(),
+                        RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
+                        new InlineKeyboardBuilder()
+                                .addWebButton("Добавить напоминание", UrlWebForms.CREATE_TASK.getUrl().formatted(provider))
+                                .nextRow()
+                                .addButton("Сохраненные напоминания", "saveTasks")
+                                .nextRow()
+                                .addButton("Профиль", "profile")
+                                .build()
+                );
+                profileService.createProfile(update);
+            }
             default -> outputsMethods.outputMessage(id, "Неизвестная команда!");
         }
 

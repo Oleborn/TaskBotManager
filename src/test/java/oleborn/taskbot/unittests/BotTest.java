@@ -5,7 +5,6 @@ import oleborn.taskbot.mapper.TaskMapper;
 import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.model.entities.Task;
 
-import oleborn.taskbot.repository.FriendRepository;
 import oleborn.taskbot.repository.ProfileRepository;
 import oleborn.taskbot.repository.TaskRepository;
 import oleborn.taskbot.service.interfaces.TaskService;
@@ -46,8 +45,6 @@ public class BotTest {
 
     @MockitoBean
     private ProfileRepository profileRepository;
-    @MockitoBean
-    private FriendRepository friendRepository;
 
 
     @Test

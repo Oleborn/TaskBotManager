@@ -9,7 +9,8 @@ public enum UrlWebForms {
 
 
     CREATE_TASK("https://%s/task-form.html"),
-    UPDATE_TASK("https://%s/updateTask_form.html?task_id=%s");
+    UPDATE_TASK("https://%s/updateTask_form.html?task_id=%s"),
+    SELF_DATA("https://%s/self-data-form.html");
 
     private final String url;
 }
