@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 
 @Entity
 @Table(name = "task_table")
@@ -47,8 +46,8 @@ public class Task {
     @Column
     private LocalDateTime dateModified;
 
-    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE") // Явное указание типа
-    private OffsetDateTime dateSending; // Замена long на OffsetDateTime для гибкости работы с временными зонами
+    @Column
+    private LocalDateTime dateSending;
 
     @Column
     private String timeZoneOwner;

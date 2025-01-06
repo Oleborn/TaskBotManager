@@ -61,6 +61,22 @@
             padding: 10px;
             margin-bottom: 20px;
             color: #0056a3;
+            font-size: 16px;
+        }
+        .success-message {
+            background-color: #e8f5e9;
+            border-color: #8bc34a;
+            color: #007700;
+        }
+        .error-message {
+            background-color: #ffebee;
+            border-color: #f44336;
+            color: #a30000;
+        }
+        .diagnostic-message {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #888;
         }
         @media (max-width: 600px) {
             input, select, textarea {
@@ -72,19 +88,17 @@
 <body>
 <h2>Редактирование напоминания</h2>
 
-<h4>Введите новые желаемые значения!</h4>
-
 <div class="message-box" id="messageBox">
     Загрузка данных...
 </div>
 
 <form id="taskForm" action="/task/update" method="POST" onsubmit="return handleSubmit(event)">
-    <!-- Поле для ID задачи -->
+    <!-- Скрытые поля -->
+    <input type="hidden" id="user_id" name="user_id" value="">
     <input type="hidden" id="task_id" name="task_id" value="">
-    <input type="hidden" id="timeZone" name="timeZone" value="">
     <input type="hidden" id="recipient" name="recipient" value="">
 
-    <!-- Остальные поля формы -->
+    <!-- Поля формы -->
     <label for="title">Заголовок:</label>
     <input type="text" id="title" name="title" placeholder="Введите текст заголовка" required>
 
@@ -98,8 +112,9 @@
     <input type="time" id="localTime" name="localTime" required>
 
     <label for="recipient">Кому предназначено:</label>
-    <select id="recipientSelect" name="recipient" required>
+    <select id="recipientSelect" name="recipientSelect" required>
         <option value="self">Мне</option>
+        <!-- Динамически добавляемые опции друзей -->
     </select>
 
     <button type="submit">Сохранить изменения</button>
@@ -113,66 +128,153 @@
     }
 
     // Показывает сообщение в верхней части формы
-    function showMessage(message, success = false) {
+    function showMessage(message, success = false, taskDetails = null, diagnosticInfo = '') {
         const messageBox = document.getElementById('messageBox');
         messageBox.textContent = message;
-        messageBox.style.color = success ? "#007700" : "#a30000";
-        messageBox.style.borderColor = success ? "#8bc34a" : "#f44336";
-        messageBox.style.backgroundColor = success ? "#e8f5e9" : "#ffebee";
+
+        if (success && taskDetails) {
+            messageBox.innerHTML += `<br><br><strong>Данные задачи:</strong><br>
+                <strong>Заголовок:</strong> ${taskDetails.title || 'Не задан'}<br>
+                <strong>Описание:</strong> ${taskDetails.description || 'Не задано'}<br>
+                <strong>Дата:</strong> ${taskDetails.date || 'Не указана'} <strong>Время:</strong> ${taskDetails.time || 'Не указано'}`;
+        }
+
+        if (diagnosticInfo) {
+            messageBox.innerHTML += `<div class="diagnostic-message">${diagnosticInfo}</div>`;
+        }
+
+        messageBox.className = 'message-box'; // Сбросить все стили
+
+        if (success) {
+            messageBox.classList.add('success-message');
+        } else {
+            messageBox.classList.add('error-message');
+        }
     }
 
     // Обработка загрузки страницы
     window.onload = function () {
-        const taskId = getQueryParam("task_id"); // Получаем ID из URL
-        if (!taskId) {
-            showMessage("Ошибка: ID задачи не указан в URL.");
-            return;
+        if (Telegram.WebApp) {
+            const userId = Telegram.WebApp.initDataUnsafe.user.id;
+            document.getElementById('user_id').value = userId;
+
+            const taskId = getQueryParam("task_id");
+            if (!taskId) {
+                showMessage("Ошибка: ID задачи не указан в URL.");
+                return;
+            }
+
+            document.getElementById('task_id').value = taskId;
+
+            // Загружаем данные задачи
+            fetch(`/task/${taskId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        // Добавляем диагностику для ошибок 404 и 500
+                        if (response.status === 404) {
+                            throw new Error("Задача не найдена (ошибка 404). Проверьте правильность ID.");
+                        } else if (response.status === 500) {
+                            throw new Error("Ошибка на сервере (ошибка 500). Попробуйте позже.");
+                        }
+                        throw new Error("Неизвестная ошибка при загрузке задачи.");
+                    }
+                    return response.json();
+                })
+                .then(task => {
+                    // Получаем значение из сервера
+                    const dateSending = task.dateSending; // Например, "2024-12-25T02:56Z"
+
+                    // Преобразуем строку даты в объект Date
+                    const dateTime = new Date(dateSending); // Преобразуем в Date объект
+                    if (isNaN(dateTime.getTime())) {
+                        throw new Error("Невалидная дата или время задачи. Пожалуйста, проверьте данные на сервере.");
+                    }
+
+                    // Форматируем дату и время для отображения в локальном формате
+                    const localDate = dateTime.toLocaleDateString(); // Например, "25.12.2024"
+                    const localTime = dateTime.toLocaleTimeString(); // Например, "06:56:00 AM"
+
+                    // Заполняем поля формы только если дата корректна
+                    document.getElementById('localDate').value = dateTime.toISOString().split('T')[0];  // YYYY-MM-DD
+                    document.getElementById('localTime').value = dateTime.toTimeString().slice(0, 5);  // HH:MM
+                    document.getElementById('title').value = task.title || "";
+                    document.getElementById('description').value = task.description || "";
+
+                    // Загружаем друзей для выбора получателя
+                    const recipientSelect = document.getElementById('recipientSelect');
+                    fetch(`/profile/${userId}/friends`)
+                        .then(response => response.json())
+                        .then(friends => {
+                            friends.forEach(friend => {
+                                const option = document.createElement('option');
+                                option.value = friend.id;
+                                option.textContent = friend.telegramNickname;
+                                recipientSelect.appendChild(option);
+                            });
+
+                            // Устанавливаем текущего получателя
+                            document.getElementById('recipient').value = task.recipient || "self";
+                            recipientSelect.value = task.recipient || "self";
+                        });
+
+                    // Показать информацию о задаче
+                    showMessage("Данные задачи успешно загружены!", true, {
+                        title: task.title,
+                        description: task.description,
+                        date: localDate,
+                        time: localTime,
+                    });
+                })
+                .catch(error => {
+                    console.error("Ошибка загрузки задачи:", error);
+                    showMessage("Ошибка загрузки задачи. Попробуйте позже.", false, null, `Диагностика: ${error.message}`);
+                });
+        } else {
+            showMessage("Ошибка: Telegram WebApp SDK не инициализировано.");
         }
 
-        // Устанавливаем ID задачи в скрытое поле формы
-        document.getElementById('task_id').value = taskId;
-
-        // Загружаем данные задачи с сервера
-        fetch(`/task/${taskId}`)
-            .then(response => {
-                if (!response.ok) throw new Error("Ошибка загрузки задачи");
-                return response.json();
-            })
-            .then(task => {
-                // Заполняем форму данными задачи
-                document.getElementById('title').value = task.title;
-                document.getElementById('description').value = task.description;
-
-                showMessage("Данные успешно загружены", true);
-            })
-            .catch(error => {
-                console.error("Ошибка загрузки задачи:", error);
-                showMessage("Ошибка загрузки задачи. Попробуйте позже.");
-            });
+        Telegram.WebApp.ready();
     };
 
     // Обработка отправки формы
     function handleSubmit(event) {
         event.preventDefault();
 
-        const form = event.target;
-        const formData = new FormData(form);
+        const recipientValue = document.getElementById('recipientSelect').value;
+        document.getElementById('recipient').value = recipientValue === "self"
+            ? document.getElementById('user_id').value
+            : recipientValue;
 
-        fetch(form.action, {
+        const formData = new URLSearchParams();
+        formData.append('task_id', document.getElementById('task_id').value);
+        formData.append('user_id', document.getElementById('user_id').value);
+        formData.append('recipient', document.getElementById('recipient').value);
+        formData.append('title', document.getElementById('title').value);
+        formData.append('description', document.getElementById('description').value);
+        formData.append('localDate', document.getElementById('localDate').value);
+        formData.append('localTime', document.getElementById('localTime').value);
+
+
+        fetch('/task/update', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData.toString(),
         })
             .then(response => {
-                if (!response.ok) throw new Error("Ошибка обновления задачи");
+                if (!response.ok) {
+                    throw new Error("Ошибка обновления задачи.");
+                }
                 return response.text();
             })
             .then(() => {
                 showMessage("Задача успешно обновлена!", true);
-                setTimeout(() => Telegram.WebApp.close(), 2000); // Закрыть WebApp через 2 секунды
+                setTimeout(() => Telegram.WebApp.close(), 2000);
             })
             .catch(error => {
                 console.error("Ошибка отправки формы:", error);
-                showMessage("Ошибка при сохранении изменений. Попробуйте еще раз.");
+                showMessage("Ошибка при сохранении изменений. Попробуйте еще раз.", false, null, `Диагностика: ${error.message}`);
             });
     }
 </script>

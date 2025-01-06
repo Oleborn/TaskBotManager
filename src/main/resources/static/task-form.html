@@ -32,13 +32,14 @@
             margin-top: 10px;
         }
         input, select, textarea, button {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
             width: 100%; /* Полная ширина формы */
             padding: 10px;
             margin-top: 8px;
             margin-bottom: 20px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 16px;
             box-sizing: border-box;
         }
         textarea {
@@ -82,7 +83,6 @@
 
 <form id="taskForm" action="/task" method="POST" onsubmit="return handleSubmit(event)">
     <input type="hidden" id="user_id" name="user_id" value="">
-    <input type="hidden" id="timeZone" name="timeZone" value="">
     <input type="hidden" id="recipient" name="recipient" value="">
 
     <label for="title">Заголовок:</label>
@@ -111,8 +111,6 @@
         if (Telegram.WebApp) {
             const userId = Telegram.WebApp.initDataUnsafe.user.id;
             document.getElementById('user_id').value = userId;
-
-            document.getElementById('timeZone').value = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
             fetch(`/profile/${userId}/friends`)
                 .then(response => response.json())

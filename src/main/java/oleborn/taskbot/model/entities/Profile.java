@@ -1,7 +1,6 @@
 package oleborn.taskbot.model.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import oleborn.taskbot.utils.CommunicationStatus;
 
+import java.util.ArrayList;
 import java.util.List;
-
 
 @Entity
 @Table(name = "profile")
@@ -20,13 +19,11 @@ import java.util.List;
 @Builder
 public class Profile {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
 
-    @Column(nullable = false, length = 40)
-    @Size(min = 3, max = 40)
-    @NotNull
+    //---- Информация которую пользователь вводит по желанию ----//
+
+    @Column(length = 40)
+    @Size(max = 60)
     private String yourselfName;
 
     @Column(length = 20)
@@ -35,26 +32,28 @@ public class Profile {
     @Column(length = 400)
     private String yourselfDescription;
 
-    @Column(nullable = false)
-    private String timeZoneId;
-
     @ManyToMany
     @JoinTable(
-            name = "profile_friends", // Название таблицы для связи
-            joinColumns = @JoinColumn(name = "profile_id"), // Внешний ключ для Profile
-            inverseJoinColumns = @JoinColumn(name = "friend_id") // Внешний ключ для Friend
+            name = "profile_messages",
+            joinColumns = @JoinColumn(name = "sender_profile_id"),
+            inverseJoinColumns = @JoinColumn(name = "receiver_profile_id")
     )
-    private List<Friend> listFriends;
+    @Builder.Default
+    private List<Profile> listProfilesWhoCanSendMessages = new ArrayList<>();
 
-    //---- telegram data ----//
+    //---- Telegram data ----//
     @Column
     private String nickName;
 
-    @Column
+    @Id
     private Long telegramId;
 
-    // ---- utils ----//
+    // ---- Utils ----//
     @Column
+    @Enumerated(EnumType.STRING)
     private CommunicationStatus communicationStatus;
+
+    @Column
+    private String timeZone;
 
 }

@@ -23,9 +23,7 @@ public interface TaskService {
 
     LocalDateTime createLocalDateTime(String localDate, String localTime);
 
-    List<TaskDto> getTasksForSending(OffsetDateTime time);
-
-    OffsetDateTime convertClientToServerTime(String localDate, String localTime, String clientTimeZone);
+    List<TaskDto> getTasksForSending(LocalDateTime time);
 
     void outputInMessageTask(TaskDto taskDto);
 
