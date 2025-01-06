@@ -14,14 +14,15 @@ import oleborn.taskbot.utils.RandomPictures;
 import oleborn.taskbot.utils.UrlWebForms;
 import oleborn.taskbot.utils.outputMethods.InlineKeyboardBuilder;
 import oleborn.taskbot.utils.outputMethods.OutputsMethods;
+import oleborn.taskbot.utils.outputMethods.TimeProcessingMethods;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static oleborn.taskbot.utils.OutputMessages.*;
@@ -40,6 +41,9 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
     @Resource
     private ProfileService profileService;
 
+    @Resource
+    private TimeProcessingMethods timeProcessingMethods;
+
     @Value("${taskbot.provider}")
     private String provider;
 
@@ -53,7 +57,7 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
         }
 
         if (update.getCallbackQuery().getData().startsWith("savedTask")) {
-            tasksHandler(update);
+            tasksViewHandler(update);
             return;
         }
         if (update.getCallbackQuery().getData().startsWith("deleteTask")) {
@@ -73,16 +77,19 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
             case "thanks" ->
                     outputsMethods.outputMessageWithCapture(update, "Да пожалуйста \uD83E\uDEE1", RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture());
             case "profile" -> {
-                ProfileDto profileDto = profileService.getProfileByID(update.getCallbackQuery().getFrom().getId());
+                Optional<ProfileDto> profileDto = profileService.getProfileByID(update.getCallbackQuery().getFrom().getId());
+                if (profileDto.isEmpty()) {
+                    throw new RuntimeException(); //TODO тут кастомное исключение
+                }
 
                 String outputMessages;
 
-                if (profileDto.getListProfilesWhoCanSendMessages().isEmpty()){
+                if (profileDto.get().getListProfilesWhoCanSendMessages().isEmpty()){
                     outputMessages = RETURN_PROFILE_NO_FRIENDS.getTextMessage();
                 } else {
                     outputMessages = RETURN_PROFILE_FRIENDS.getTextMessage().formatted(
-                            profileDto.getListProfilesWhoCanSendMessages().stream()
-                                    .map((Profile t) -> profileDto.getNickName()) // Извлекаем nickName
+                            profileDto.get().getListProfilesWhoCanSendMessages().stream()
+                                    .map((Profile t) -> profileDto.get().getNickName()) // Извлекаем nickName
                                     .filter(Objects::nonNull)    // Убираем возможные null значения
                                     .collect(Collectors.joining("\n,")) // Соединяем через перенос строки
                     );
@@ -91,9 +98,9 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                 outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
                         update,
                         RETURN_PROFILE.getTextMessage().formatted(
-                                profileDto.getYourselfName() != null ? profileDto.getYourselfName() : "Пока не заполнено",
-                                profileDto.getYourselfDateOfBirth() != null ? profileDto.getYourselfDateOfBirth() : "Пока не заполнено",
-                                profileDto.getYourselfDescription() != null ? profileDto.getYourselfDescription() : "Пока не заполнено",
+                                profileDto.get().getYourselfName() != null ? profileDto.get().getYourselfName() : "Пока не заполнено",
+                                profileDto.get().getYourselfDateOfBirth() != null ? profileDto.get().getYourselfDateOfBirth() : "Пока не заполнено",
+                                profileDto.get().getYourselfDescription() != null ? profileDto.get().getYourselfDescription() : "Пока не заполнено",
                                 update.getCallbackQuery().getFrom().getUserName(),
                                 update.getCallbackQuery().getFrom().getId(),
                                 outputMessages
@@ -117,7 +124,7 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
         }
     }
 
-    private void tasksHandler(Update update) {
+    private void tasksViewHandler(Update update) {
         String[] name = update.getCallbackQuery().getData().split("_");
         TaskDto taskDto = taskService.getTaskByID(Long.valueOf(name[1]));
         outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
@@ -125,10 +132,10 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                 OutputMessages.RETURN_UPDATE_TASK.getTextMessage().formatted(
                         taskDto.getTitle(),
                         taskDto.getDescription(),
-                        taskDto.getDateCreated().atZone(ZoneId.systemDefault())
-                                .withZoneSameInstant(ZoneId.of(taskDto.getTimeZoneOwner()))
+                        taskDto.getDateCreated()
                                 .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
-                        taskDto.getDateSending().atZoneSameInstant(ZoneId.of(taskDto.getTimeZoneOwner()))
+                        //перевести часовой пояс из string в int и прибавить к taskDto.getDateSending()
+                        timeProcessingMethods.processMSKTimeToLocalTimeForProfile(taskDto)
                                 .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
                         taskDto.isSent() ? "Отправлено!" : "Не отправлено"
 //                        profileService.getProfileByID(taskDto.getCreatorId()).getNickName(), //TODO доделать добавление профилей
@@ -142,6 +149,15 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                         .build()
         );
     }
+    /*
+    У каждого профиля хранится часовой пояс + к МСК
+    сервер имеет свой часовой пояс и вычисляет разницу с МСК у себя
+    когда человек делает таску сервер должен:
+        - записать в бд время отправки по МСК
+        - при возврате получение из БД часового пояса и расчет в соответствии
+        с часовым поясом получателя
+     */
+
 
     private void deleteMethod(Update update) {
         String[] name = update.getCallbackQuery().getData().split("_");

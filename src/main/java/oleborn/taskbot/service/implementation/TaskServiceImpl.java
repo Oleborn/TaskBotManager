@@ -6,6 +6,7 @@ import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.model.entities.Task;
 import oleborn.taskbot.repository.TaskRepository;
 import oleborn.taskbot.service.interfaces.TaskService;
+import oleborn.taskbot.utils.outputMethods.TimeProcessingMethods;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -23,9 +24,14 @@ public class TaskServiceImpl implements TaskService {
     @Resource
     private TaskMapper taskMapper;
 
+    @Resource
+    private TimeProcessingMethods timeProcessingMethods;
+
 
     @Override
     public TaskDto createTask(TaskDto taskDto) {
+        //переводим дату отправки в МСК
+        taskDto.setDateSending(timeProcessingMethods.processLocalTimeToMSKTime(taskDto.getDateSending()));
         Task task = taskMapper.toEntity(taskDto);
         return taskMapper.toDto(taskRepository.save(task));
     }
@@ -33,8 +39,9 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto updateTask(TaskDto taskDto) {
 
-        Task taskEntity = taskRepository.findById(taskDto.getId())
-                .orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ"));
+        Task taskEntity = taskRepository.findById(taskDto.getId()).orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ"));
+        //переводим дату отправки в МСК
+        taskDto.setDateSending(timeProcessingMethods.processLocalTimeToMSKTime(taskDto.getDateSending()));
 
         taskMapper.updateTaskEntityFromDto(taskDto, taskEntity);
 
@@ -73,27 +80,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskDto> getTasksForSending(OffsetDateTime time) {
+    public List<TaskDto> getTasksForSending(LocalDateTime time) {
         return taskRepository.findTasksToSend(time)
                 .stream()
                 .map(task -> taskMapper.toDto(task))
                 .toList();
-    }
-
-    @Override
-    public OffsetDateTime convertClientToServerTime(String localDate, String localTime, String clientTimeZone) {
-        // Получение часового пояса сервера
-        ZoneId serverZoneId = ZoneId.systemDefault();
-        // Преобразование клиентских данных в ZonedDateTime
-        ZonedDateTime clientDateTime = ZonedDateTime.of(
-                LocalDate.parse(localDate),
-                LocalTime.parse(localTime),
-                ZoneId.of(clientTimeZone)
-        );
-        // Приведение времени к серверному часовому поясу
-        ZonedDateTime serverDateTime = clientDateTime.withZoneSameInstant(serverZoneId);
-        // Преобразование в OffsetDateTime (включает смещение)
-        return serverDateTime.toOffsetDateTime();
     }
 
     @Override
@@ -107,7 +98,7 @@ public class TaskServiceImpl implements TaskService {
                 .description(taskDto.getDescription())
                 .dateCreated(taskDto.getDateCreated())
                 .dateModified(LocalDateTime.now())
-                .dateSending(OffsetDateTime.now())
+                .dateSending(LocalDateTime.now())
                 .sent(true)
                 .updated(true)
                 .build();

@@ -100,6 +100,13 @@ public enum OutputMessages {
                     
                     <b>Но вы всегда можете добавите кого-нибудь!</b>
                     """
+    ),
+    PROFILE_CREATED(
+            """
+                    <b>Привет!</b>
+                    
+                    <b>Мы с тобой еще не знакомы, поэтому в предложенной форме введи что-нибудь, а я запомню \uD83D\uDE09</b>
+                    """
     );
 
     private final String textMessage;

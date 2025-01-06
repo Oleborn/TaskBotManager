@@ -46,8 +46,8 @@ public class Task {
     @Column
     private LocalDateTime dateModified;
 
-    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE") // Явное указание типа
-    private OffsetDateTime dateSending; // Замена long на OffsetDateTime для гибкости работы с временными зонами
+    @Column
+    private LocalDateTime dateSending;
 
     @Column
     private String timeZoneOwner;

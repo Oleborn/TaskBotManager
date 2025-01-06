@@ -23,7 +23,7 @@ public class Profile {
     //---- Информация которую пользователь вводит по желанию ----//
 
     @Column(length = 40)
-    @Size(min = 3, max = 60)
+    @Size(max = 60)
     private String yourselfName;
 
     @Column(length = 20)

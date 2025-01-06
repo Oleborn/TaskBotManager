@@ -2,6 +2,7 @@ package oleborn.taskbot.controller;
 
 import jakarta.annotation.Resource;
 import oleborn.taskbot.mapper.TaskMapper;
+import oleborn.taskbot.model.dto.ProfileDto;
 import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.service.interfaces.TaskService;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/task")
@@ -41,29 +43,31 @@ public class TaskController {
                                            @RequestParam String title,
                                            @RequestParam String description,
                                            @RequestParam String localDate,
-                                           @RequestParam String localTime,
-                                           @RequestParam String timeZone
+                                           @RequestParam String localTime
     ) {
 
-        OffsetDateTime resultTime = taskService.convertClientToServerTime(localDate, localTime, timeZone);
+        // Объединение LocalDate и LocalTime в LocalDateTime
+        LocalDateTime localDateTime = LocalDateTime.of(LocalDate.parse(
+                localDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                LocalTime.parse(localTime, DateTimeFormatter.ofPattern("HH:mm"))
+        );
+
+        Optional<ProfileDto> profileByID = profileService.getProfileByID(recipient);
+
+        if (profileByID.isEmpty()) {
+            throw new RuntimeException();//TODO тут кастомное исключение
+        }
 
         taskService.createTask(TaskDto.builder()
                 .ownerId(recipient)
                 .creatorId(user_id)
                 .title(title)
                 .description(description)
-                .dateSending(resultTime)
-                //profileService.getProfileByID(recipient).getTimeZoneId();
-                .timeZoneOwner(timeZone) //TODO тут должен быть часовой пояс того кому придет уведомление
+                .dateSending(localDateTime)
+                .timeZoneOwner(profileByID.get().getTimeZone()) //TODO тут должен быть часовой пояс того кому придет уведомление
                 .sent(false)
                 .updated(false)
                 .build());
-
-        // Объединение LocalDate и LocalTime в LocalDateTime
-        LocalDateTime localDateTime = LocalDateTime.of(
-                LocalDate.parse(localDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                LocalTime.parse(localTime, DateTimeFormatter.ofPattern("HH:mm"))
-        );
 
         // Форматирование в строку с нужным паттерном
         String formattedTime = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
@@ -86,11 +90,20 @@ public class TaskController {
                                            @RequestParam String title,
                                            @RequestParam String description,
                                            @RequestParam String localDate,
-                                           @RequestParam String localTime,
-                                           @RequestParam String timeZone
+                                           @RequestParam String localTime
     ) {
 
-        OffsetDateTime resultTime = taskService.convertClientToServerTime(localDate, localTime, timeZone);
+        // Объединение LocalDate и LocalTime в LocalDateTime
+        LocalDateTime localDateTime = LocalDateTime.of(LocalDate.parse(
+                        localDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                LocalTime.parse(localTime, DateTimeFormatter.ofPattern("HH:mm"))
+        );
+
+        Optional<ProfileDto> profileByID = profileService.getProfileByID(recipient);
+
+        if (profileByID.isEmpty()) {
+            throw new RuntimeException();//TODO тут кастомное исключение
+        }
 
         taskService.updateTask(TaskDto.builder()
                 .id(task_id)
@@ -98,18 +111,11 @@ public class TaskController {
                 .creatorId(user_id)
                 .title(title)
                 .description(description)
-                .dateSending(resultTime)
-                //profileService.getProfileByID(recipient).getTimeZoneId();
-                .timeZoneOwner(timeZone) //TODO тут должен быть часовой пояс того кому придет уведомление
+                .dateSending(localDateTime)
+                .timeZoneOwner(profileByID.get().getTimeZone())
                 .sent(false)
                 .updated(true)
                 .build());
-
-        // Объединение LocalDate и LocalTime в LocalDateTime
-        LocalDateTime localDateTime = LocalDateTime.of(
-                LocalDate.parse(localDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                LocalTime.parse(localTime, DateTimeFormatter.ofPattern("HH:mm"))
-        );
 
         // Форматирование в строку с нужным паттерном
         String formattedTime = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));

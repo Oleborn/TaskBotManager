@@ -43,7 +43,7 @@
         }
         textarea {
             height: 120px;
-            resize: vertical; /* Возможность изменения размера пользователем */
+            resize: vertical;
         }
         button {
             background-color: #0088cc;
@@ -54,6 +54,10 @@
         }
         button:hover {
             background-color: #0077b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
         .message-box {
             background: #eef4fc;
@@ -75,7 +79,8 @@
 <div class="message-box" id="messageBox">Введите данные для редактирования профиля. Часовой пояс обязателен для заполнения.</div>
 
 <form id="profileForm" onsubmit="return handleSubmit(event)">
-    <input type="hidden" id="user_id" name="user_id" value="">
+    <input type="hidden" id="telegramId" name="telegramId">
+    <input type="hidden" id="nickName" name="nickName">
 
     <label for="yourselfName">Ваше имя:</label>
     <input type="text" id="yourselfName" name="yourselfName" placeholder="Введите ваше имя">
@@ -89,14 +94,21 @@
     <label for="timeZone">Часовой пояс (обязательно):</label>
     <input type="text" id="timeZone" name="timeZone" placeholder="Часовой пояс к МСК (Например для МСК +0)" required>
 
-    <button type="submit">Сохранить</button>
+    <button type="submit" id="submitButton">Сохранить</button>
 </form>
 
 <script>
     window.onload = function () {
         if (Telegram.WebApp) {
-            const userId = Telegram.WebApp.initDataUnsafe.user.id;
-            document.getElementById('user_id').value = userId;
+            const telegramId = Telegram.WebApp.initDataUnsafe.user.id;
+            const nickName = Telegram.WebApp.initDataUnsafe.user.username || "не указан";
+
+            // Заполняем скрытые поля
+            document.getElementById('telegramId').value = telegramId;
+            document.getElementById('nickName').value = nickName;
+
+            console.log("Telegram ID:", telegramId);
+            console.log("Nickname:", nickName);
         } else {
             showMessage("Ошибка: Telegram WebApp SDK не инициализировано.");
         }
@@ -107,7 +119,12 @@
     function handleSubmit(event) {
         event.preventDefault();
 
-        const userId = document.getElementById('user_id').value;
+        // Отключаем кнопку, чтобы предотвратить повторное нажатие
+        const submitButton = document.getElementById('submitButton');
+        submitButton.disabled = true;
+
+        const telegramId = document.getElementById('telegramId').value;
+        const nickName = document.getElementById('nickName').value;
         const yourselfName = document.getElementById('yourselfName').value;
         const yourselfDateOfBirth = document.getElementById('yourselfDateOfBirth').value;
         const yourselfDescription = document.getElementById('yourselfDescription').value;
@@ -115,18 +132,20 @@
 
         if (!timeZone) {
             showMessage("Часовой пояс обязателен для заполнения.");
+            submitButton.disabled = false; // Включаем кнопку обратно
             return;
         }
 
         const data = {
-            user_id: userId,
+            telegramId: telegramId,
+            nickName: nickName,
             yourselfName: yourselfName || null,
             yourselfDateOfBirth: yourselfDateOfBirth || null,
             yourselfDescription: yourselfDescription || null,
             timeZone
         };
 
-        fetch('/profile/', {
+        fetch('/profile', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -142,10 +161,18 @@
             })
             .then(message => {
                 showMessage(message, true);
+
+                // Закрываем Telegram WebApp после успешной отправки
+                if (Telegram.WebApp) {
+                    Telegram.WebApp.close();
+                }
             })
             .catch(error => {
                 showMessage("Произошла ошибка при сохранении данных. Попробуйте еще раз.");
                 console.error("Ошибка отправки формы: ", error);
+
+                // Включаем кнопку обратно в случае ошибки
+                submitButton.disabled = false;
             });
     }
 

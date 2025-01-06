@@ -30,30 +30,24 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public void createProfile(Update update) {
-        System.out.println(update.getMessage().getChatId());
-
-        Optional<Profile> p = profileRepository.findById(update.getMessage().getChatId());
-        if (p.isEmpty()) {
-            profileRepository.save(profileMapper.fromDto(
-                    ProfileDto.builder()
-                            .nickName(update.getMessage().getFrom().getUserName())
-                            .telegramId(update.getMessage().getChatId())
-                            .communicationStatus(CommunicationStatus.DEFAULT)
-                            .build()
-            ));
-        } else {
-            updateProfile(profileMapper.toDto(p.get()));
-        }
+        profileRepository.save(profileMapper.fromDto(
+                ProfileDto.builder()
+                        .nickName(update.getMessage().getFrom().getUserName())
+                        .telegramId(update.getMessage().getChatId())
+                        .communicationStatus(CommunicationStatus.DEFAULT)
+                        .build()
+        ));
     }
 
     @Override
-    public ProfileDto updateProfile(ProfileDto profileDto) {
+    public Optional<ProfileDto> updateProfile(ProfileDto profileDto) {
+        System.out.println(profileDto);
         Profile profileEntity = profileRepository.findById(profileDto.getTelegramId())
                 .orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ"));
 
         profileMapper.updateProfileEntityFromDto(profileDto, profileEntity);
 
-        return profileMapper.toDto(profileRepository.save(profileEntity));
+        return Optional.ofNullable(profileMapper.toDto(profileRepository.save(profileEntity)));
     }
 
     @Override
@@ -62,12 +56,12 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public ProfileDto getProfileByID(Long id) {
+    public Optional<ProfileDto> getProfileByID(Long id) {
 
         Optional<Profile> profileEntity = profileRepository.findById(id);
 
-        return profileEntity.map(profileMapper::toDto)
-                .orElseThrow(() -> new EntityNotFoundException("Профиль с ID " + id + " не найден"));
+        return profileEntity.map(profileMapper::toDto);
+                //.orElseThrow(() -> new EntityNotFoundException("Профиль с ID " + id + " не найден")));
     }
 
     @Override

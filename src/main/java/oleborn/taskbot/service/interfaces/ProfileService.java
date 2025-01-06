@@ -6,17 +6,18 @@ import oleborn.taskbot.model.dto.ProfileSelfDataDto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface ProfileService {
 
     void createProfile(Update update);
 
-    ProfileDto updateProfile(ProfileDto profile);
+    Optional<ProfileDto> updateProfile(ProfileDto profile);
 
     void deleteProfile(ProfileDto profileDto);
 
-    ProfileDto getProfileByID(Long id);
+    Optional<ProfileDto> getProfileByID(Long id);
 
     List<ProfileDto> getFriends(Long id);
 

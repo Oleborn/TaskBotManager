@@ -26,4 +26,11 @@ public class ProfileController {
         profileService.setSelfDateProfile(dto);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping
+    public ResponseEntity<Void> updateProfile(@RequestBody ProfileDto profileDto) {
+        System.out.println(profileDto);
+        profileService.updateProfile(profileDto);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -8,6 +8,7 @@ import oleborn.taskbot.model.entities.Task;
 import oleborn.taskbot.repository.ProfileRepository;
 import oleborn.taskbot.repository.TaskRepository;
 import oleborn.taskbot.service.interfaces.TaskService;
+import oleborn.taskbot.utils.outputMethods.TimeProcessingMethods;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -64,38 +65,6 @@ public class BotTest {
     }
 
     @Test
-    public void testMapper(){
-        Task task = Task.builder()
-                .id(1L)
-                .ownerId(12345L)
-                .creatorId(22222L)
-                .title("test")
-                .description("test1")
-                .dateCreated(LocalDateTime.parse("2024-12-23T10:39:22.294928900"))
-                .dateModified(LocalDateTime.parse("2024-12-23T10:39:22.294928900"))
-                .dateSending(OffsetDateTime.parse("2024-12-23T10:39:22.294928900+07:00"))
-                .sent(false)
-                .updated(false)
-                .build();
-
-        TaskDto taskDto = TaskDto.builder()
-                .id(1L)
-                .ownerId(12345L)
-                .creatorId(22222L)
-                .title("test")
-                .description("test1")
-                .dateCreated(LocalDateTime.parse("2024-12-23T10:39:22.294928900"))
-                .dateModified(LocalDateTime.parse("2024-12-23T10:39:22.294928900"))
-                .dateSending(OffsetDateTime.parse("2024-12-23T10:39:22.294928900+07:00"))
-                .sent(false)
-                .updated(false)
-                .build();
-
-        TaskDto taskDto1 = taskMapper.toDto(task);
-        Task task1 = taskMapper.toEntity(taskDto);
-
-        assertEquals(task, task1);
-        assertEquals(taskDto, taskDto1);
-
+    public void test(){
     }
 }

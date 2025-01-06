@@ -28,7 +28,7 @@ public class TaskDto {
 
     private LocalDateTime dateModified;
 
-    private OffsetDateTime dateSending;
+    private LocalDateTime dateSending;
 
     private String timeZoneOwner;
 
