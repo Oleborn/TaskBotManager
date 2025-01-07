@@ -13,11 +13,15 @@ public interface ProfileService {
 
     void createProfile(Update update);
 
-    Optional<ProfileDto> updateProfile(ProfileDto profile);
+    void updateProfile(ProfileDto profile);
 
     void deleteProfile(ProfileDto profileDto);
 
-    Optional<ProfileDto> getProfileByID(Long id);
+    ProfileDto getProfileByIDForStart(Long id);
+
+    ProfileDto getProfileByID(Long id);
+
+    ProfileDto getProfileByTelegramName(String telegramNickName);
 
     List<ProfileDto> getFriends(Long id);
 

@@ -1,4 +1,4 @@
-package oleborn.taskbot.utils.outputMethods;
+package oleborn.taskbot.utils;
 
 import jakarta.annotation.Resource;
 import oleborn.taskbot.model.dto.TaskDto;
@@ -22,7 +22,7 @@ public class TimeProcessingMethods {
         return taskDto.getDateSending()
                 .atZone(ZoneId.of("Europe/Moscow"))
                 //тут мы просто прибавляем часы к текущему времени в МСК
-                .plusHours(Integer.parseInt(profileService.getProfileByID(taskDto.getOwnerId()).get().getTimeZone()))
+                .plusHours(Integer.parseInt(profileService.getProfileByID(taskDto.getOwnerId()).getTimeZone()))
                 .toLocalDateTime();
     }
 }

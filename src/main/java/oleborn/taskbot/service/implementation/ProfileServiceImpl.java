@@ -33,21 +33,21 @@ public class ProfileServiceImpl implements ProfileService {
         profileRepository.save(profileMapper.fromDto(
                 ProfileDto.builder()
                         .nickName(update.getMessage().getFrom().getUserName())
-                        .telegramId(update.getMessage().getChatId())
+                        .telegramId(update.getMessage().getFrom().getId())
                         .communicationStatus(CommunicationStatus.DEFAULT)
                         .build()
         ));
     }
 
     @Override
-    public Optional<ProfileDto> updateProfile(ProfileDto profileDto) {
-        System.out.println(profileDto);
+    public void updateProfile(ProfileDto profileDto) {
         Profile profileEntity = profileRepository.findById(profileDto.getTelegramId())
-                .orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ"));
+                .orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ updateProfile"));
+        //обновляем статус так как в форме он не получается
+        profileDto.setCommunicationStatus(profileEntity.getCommunicationStatus());
 
         profileMapper.updateProfileEntityFromDto(profileDto, profileEntity);
-
-        return Optional.ofNullable(profileMapper.toDto(profileRepository.save(profileEntity)));
+        profileRepository.save(profileEntity);
     }
 
     @Override
@@ -56,12 +56,24 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public Optional<ProfileDto> getProfileByID(Long id) {
+    public ProfileDto getProfileByIDForStart(Long id) {
+        Profile profile = profileRepository.findById(id).orElse(null);
+        return profileMapper.toDto(profile);
+    }
 
-        Optional<Profile> profileEntity = profileRepository.findById(id);
+    @Override
+    public ProfileDto getProfileByID(Long id) {
+        return profileMapper.toDto(
+                profileRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Профиль с id " + id + " не найден"))
+        );
+    }
 
-        return profileEntity.map(profileMapper::toDto);
-                //.orElseThrow(() -> new EntityNotFoundException("Профиль с ID " + id + " не найден")));
+    @Override
+    public ProfileDto getProfileByTelegramName(String telegramNickName) {
+        Profile profile = profileRepository.findProfileByNickName(telegramNickName)
+                .orElseThrow(() -> new RuntimeException("Профиль с telegramNickName " + telegramNickName + " не найден"));
+        return profileMapper.toDto(profile);
     }
 
     @Override

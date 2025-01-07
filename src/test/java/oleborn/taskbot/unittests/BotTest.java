@@ -2,13 +2,10 @@ package oleborn.taskbot.unittests;
 
 import jakarta.annotation.Resource;
 import oleborn.taskbot.mapper.TaskMapper;
-import oleborn.taskbot.model.dto.TaskDto;
-import oleborn.taskbot.model.entities.Task;
 
 import oleborn.taskbot.repository.ProfileRepository;
 import oleborn.taskbot.repository.TaskRepository;
 import oleborn.taskbot.service.interfaces.TaskService;
-import oleborn.taskbot.utils.outputMethods.TimeProcessingMethods;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -20,7 +17,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

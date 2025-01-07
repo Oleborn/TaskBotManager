@@ -25,6 +25,15 @@ public class UpdateHandlerImpl implements UpdateHandler {
         }
     }
 
+    public static long searchId(Update update) {
+        if (update.hasMessage()) {
+            return update.getMessage().getFrom().getId();
+        } else if (update.hasCallbackQuery()) {
+            return update.getCallbackQuery().getFrom().getId();
+        }
+        return 0;
+    }
+
 //        switch (profileDto.getCommunicationStatus()){
 //            case DEFAULT -> as;
 //

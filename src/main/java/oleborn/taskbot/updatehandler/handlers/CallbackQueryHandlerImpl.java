@@ -2,29 +2,29 @@ package oleborn.taskbot.updatehandler.handlers;
 
 import jakarta.annotation.Resource;
 import oleborn.taskbot.model.dto.ProfileDto;
-import oleborn.taskbot.model.entities.Profile;
-import oleborn.taskbot.service.interfaces.ProfileService;
-import oleborn.taskbot.updatehandler.handlers.interfaces.CallbackQueryHandler;
 import oleborn.taskbot.model.dto.TaskDto;
+import oleborn.taskbot.model.entities.Profile;
+import oleborn.taskbot.model.entities.Task;
+import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.service.interfaces.TaskService;
+import oleborn.taskbot.updatehandler.UpdateHandlerImpl;
+import oleborn.taskbot.updatehandler.handlers.interfaces.CallbackQueryHandler;
 import oleborn.taskbot.updatehandler.handlers.interfaces.CommandHandler;
-import oleborn.taskbot.utils.FormatDate;
-import oleborn.taskbot.utils.OutputMessages;
-import oleborn.taskbot.utils.RandomPictures;
-import oleborn.taskbot.utils.UrlWebForms;
+import oleborn.taskbot.utils.*;
 import oleborn.taskbot.utils.outputMethods.InlineKeyboardBuilder;
 import oleborn.taskbot.utils.outputMethods.OutputsMethods;
-import oleborn.taskbot.utils.outputMethods.TimeProcessingMethods;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static oleborn.taskbot.utils.CommunicationStatus.INPUT_FRIEND;
 import static oleborn.taskbot.utils.OutputMessages.*;
 
 @Component
@@ -66,30 +66,36 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
         }
 
         switch (update.getCallbackQuery().getData()) {
-            case "saveTasks" -> outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
-                    update,
-                    OutputMessages.RETURN_SAVES_TASKS.getTextMessage(),
-                    RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
-                    outputsMethods.createButtonInColumnSavedTasks(
-                            taskService.findAllTasks(update.getCallbackQuery().getFrom().getId())
-                    )
-            );
+            case "saveTasks" -> {
+                //Для верного отображения ответа проверяем пустой ли список тасков
+                List<Task> allTasks = taskService.findAllTasks(update.getCallbackQuery().getFrom().getId());
+                boolean isEmpty = allTasks.isEmpty();
+
+                String outputMessage = isEmpty ? RETURN_NO_SAVES_TASKS.getTextMessage() : RETURN_SAVES_TASKS.getTextMessage();
+                InlineKeyboardMarkup inlineKeyboardMarkup = isEmpty
+                        ? new InlineKeyboardBuilder().addButton("В начало", "/start").build()
+                        : outputsMethods.createButtonInColumnSavedTasks(allTasks);
+
+                outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
+                        update,
+                        outputMessage,
+                        RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
+                        inlineKeyboardMarkup
+                );
+            }
             case "thanks" ->
                     outputsMethods.outputMessageWithCapture(update, "Да пожалуйста \uD83E\uDEE1", RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture());
             case "profile" -> {
-                Optional<ProfileDto> profileDto = profileService.getProfileByID(update.getCallbackQuery().getFrom().getId());
-                if (profileDto.isEmpty()) {
-                    throw new RuntimeException(); //TODO тут кастомное исключение
-                }
+                ProfileDto profileDto = profileService.getProfileByID(update.getCallbackQuery().getFrom().getId());
 
                 String outputMessages;
 
-                if (profileDto.get().getListProfilesWhoCanSendMessages().isEmpty()){
+                if (profileDto.getListProfilesWhoCanSendMessages().isEmpty()) {
                     outputMessages = RETURN_PROFILE_NO_FRIENDS.getTextMessage();
                 } else {
                     outputMessages = RETURN_PROFILE_FRIENDS.getTextMessage().formatted(
-                            profileDto.get().getListProfilesWhoCanSendMessages().stream()
-                                    .map((Profile t) -> profileDto.get().getNickName()) // Извлекаем nickName
+                            profileDto.getListProfilesWhoCanSendMessages().stream()
+                                    .map((Profile t) -> profileDto.getNickName()) // Извлекаем nickName
                                     .filter(Objects::nonNull)    // Убираем возможные null значения
                                     .collect(Collectors.joining("\n,")) // Соединяем через перенос строки
                     );
@@ -98,29 +104,41 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                 outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
                         update,
                         RETURN_PROFILE.getTextMessage().formatted(
-                                profileDto.get().getYourselfName() != null ? profileDto.get().getYourselfName() : "Пока не заполнено",
-                                profileDto.get().getYourselfDateOfBirth() != null ? profileDto.get().getYourselfDateOfBirth() : "Пока не заполнено",
-                                profileDto.get().getYourselfDescription() != null ? profileDto.get().getYourselfDescription() : "Пока не заполнено",
+                                profileDto.getYourselfName() != null ? profileDto.getYourselfName() : "Пока не заполнено",
+                                profileDto.getYourselfDateOfBirth() != null ? profileDto.getYourselfDateOfBirth() : "Пока не заполнено",
+                                profileDto.getYourselfDescription() != null ? profileDto.getYourselfDescription() : "Пока не заполнено",
                                 update.getCallbackQuery().getFrom().getUserName(),
                                 update.getCallbackQuery().getFrom().getId(),
                                 outputMessages
                         ),
                         RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
                         new InlineKeyboardBuilder()
-                                .addWebButton("Изменить личные данные", UrlWebForms.SELF_DATA.getUrl().formatted(provider))
+                                .addWebButton("Изменить личные данные", UrlWebForms.SELF_DATA_UPDATE.getUrl().formatted(provider))
                                 .nextRow()
-                                .addButton("Добавить друзей в список","list_friend_add")
+                                .addButton("Добавить друзей в список", "list_friend_add")
                                 .nextRow()
                                 .addButton("Изменить список друзей", "list_friend_update")
                                 .build()
 
                 );
             }
-                // выходит список друзей, тех кто может направлять напоминания тебе
-                // 2 кнопки - добавить и редактировать
-                // при добавлении строка ждет ник телеграмма, проверяет в БД на наличие и добавляет
-                // при редактировании выходит текст и кнопками список лиц
-                // при выборе одного из списка загружается инфа и кнопки удалить и назад
+            case "list_friend_add" -> {
+
+                ProfileDto profileDto = profileService.getProfileByID(UpdateHandlerImpl.searchId(update));
+                profileDto.setCommunicationStatus(INPUT_FRIEND);
+                profileService.updateProfile(profileDto);
+
+                outputsMethods.outputMessageWithCapture(
+                        update,
+                        FRIEND_MESSAGE_FOR_ADDED.getTextMessage(),
+                        RandomPictures.RANDOM_BOT_START.getRandomNamePicture());
+            }
+            case "list_friend_update" -> {}
+            // выходит список друзей, тех кто может направлять напоминания тебе
+            // 2 кнопки - добавить и редактировать
+            // при добавлении строка ждет ник телеграмма, проверяет в БД на наличие и добавляет
+            // при редактировании выходит текст и кнопками список лиц
+            // при выборе одного из списка загружается инфа и кнопки удалить и назад
         }
     }
 
@@ -145,11 +163,11 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                 new InlineKeyboardBuilder()
                         .addWebButton("Изменить напоминание", UrlWebForms.UPDATE_TASK.getUrl().formatted(provider, name[1]))
                         .nextRow()
-                        .addButton("Удалить напоминание", "deleteTask_"+name[1])
+                        .addButton("Удалить напоминание", "deleteTask_" + name[1])
                         .build()
         );
     }
-    /*
+    /* ADDED
     У каждого профиля хранится часовой пояс + к МСК
     сервер имеет свой часовой пояс и вычисляет разницу с МСК у себя
     когда человек делает таску сервер должен:

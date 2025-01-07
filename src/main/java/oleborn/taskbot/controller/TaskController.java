@@ -8,6 +8,7 @@ import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.service.interfaces.TaskService;
 import oleborn.taskbot.utils.OutputMessages;
 import oleborn.taskbot.utils.RandomPictures;
+import oleborn.taskbot.utils.TimeProcessingMethods;
 import oleborn.taskbot.utils.outputMethods.InlineKeyboardBuilder;
 import oleborn.taskbot.utils.outputMethods.OutputsMethods;
 import org.springframework.context.annotation.Lazy;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -32,6 +32,9 @@ public class TaskController {
     private TaskMapper taskMapper;
     @Resource
     private ProfileService profileService;
+
+    @Resource
+    private TimeProcessingMethods timeProcessingMethods;
 
     @Resource
     @Lazy
@@ -48,15 +51,11 @@ public class TaskController {
 
         // Объединение LocalDate и LocalTime в LocalDateTime
         LocalDateTime localDateTime = LocalDateTime.of(LocalDate.parse(
-                localDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                        localDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                 LocalTime.parse(localTime, DateTimeFormatter.ofPattern("HH:mm"))
         );
 
-        Optional<ProfileDto> profileByID = profileService.getProfileByID(recipient);
-
-        if (profileByID.isEmpty()) {
-            throw new RuntimeException();//TODO тут кастомное исключение
-        }
+        ProfileDto profileByID = profileService.getProfileByID(recipient);
 
         taskService.createTask(TaskDto.builder()
                 .ownerId(recipient)
@@ -64,7 +63,7 @@ public class TaskController {
                 .title(title)
                 .description(description)
                 .dateSending(localDateTime)
-                .timeZoneOwner(profileByID.get().getTimeZone()) //TODO тут должен быть часовой пояс того кому придет уведомление
+                .timeZoneOwner(profileByID.getTimeZone()) //TODO тут должен быть часовой пояс того кому придет уведомление
                 .sent(false)
                 .updated(false)
                 .build());
@@ -99,11 +98,7 @@ public class TaskController {
                 LocalTime.parse(localTime, DateTimeFormatter.ofPattern("HH:mm"))
         );
 
-        Optional<ProfileDto> profileByID = profileService.getProfileByID(recipient);
-
-        if (profileByID.isEmpty()) {
-            throw new RuntimeException();//TODO тут кастомное исключение
-        }
+        ProfileDto profileByID = profileService.getProfileByID(recipient);
 
         taskService.updateTask(TaskDto.builder()
                 .id(task_id)
@@ -112,7 +107,7 @@ public class TaskController {
                 .title(title)
                 .description(description)
                 .dateSending(localDateTime)
-                .timeZoneOwner(profileByID.get().getTimeZone())
+                .timeZoneOwner(profileByID.getTimeZone())
                 .sent(false)
                 .updated(true)
                 .build());
@@ -133,10 +128,14 @@ public class TaskController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TaskDto> getTask(@PathVariable Long id) {
+
         TaskDto task = taskService.getTaskByID(id);
-        if (task != null) {
-            return ResponseEntity.ok(task);
+        if (task == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        task.setDateSending(timeProcessingMethods.processMSKTimeToLocalTimeForProfile(task));
+
+        return ResponseEntity.ok(task);
     }
 }

@@ -4,10 +4,15 @@ import jakarta.annotation.Resource;
 import oleborn.taskbot.model.dto.ProfileDto;
 import oleborn.taskbot.model.dto.ProfileSelfDataDto;
 import oleborn.taskbot.service.interfaces.ProfileService;
+import oleborn.taskbot.utils.OutputMessages;
+import oleborn.taskbot.utils.RandomPictures;
+import oleborn.taskbot.utils.outputMethods.InlineKeyboardBuilder;
+import oleborn.taskbot.utils.outputMethods.OutputsMethods;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/profile")
@@ -15,6 +20,8 @@ public class ProfileController {
 
     @Resource
     private ProfileService profileService;
+    @Resource
+    private OutputsMethods outputsMethods;
 
     @GetMapping("/{userId}/friends")
     public List<ProfileDto> getFriends(@PathVariable Long userId) {
@@ -27,10 +34,25 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/{telegramId}")
+    public ResponseEntity<ProfileDto> getProfile(@PathVariable long telegramId) {
+        ProfileDto profile = profileService.getProfileByID(telegramId);
+        return ResponseEntity.ok(profile);
+    }
+
     @PostMapping
     public ResponseEntity<Void> updateProfile(@RequestBody ProfileDto profileDto) {
-        System.out.println(profileDto);
         profileService.updateProfile(profileDto);
+
+        outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
+                profileDto.getTelegramId(),
+                OutputMessages.PROFILE_UPDATED.getTextMessage(),
+                RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture(),
+                new InlineKeyboardBuilder()
+                        .addButton("Начать работу!", "/start")
+                        .build()
+        );
+
         return ResponseEntity.ok().build();
     }
 }

@@ -3,6 +3,7 @@ package oleborn.taskbot.updatehandler.handlers;
 import jakarta.annotation.Resource;
 import oleborn.taskbot.model.dto.ProfileDto;
 import oleborn.taskbot.service.interfaces.ProfileService;
+import oleborn.taskbot.updatehandler.UpdateHandlerImpl;
 import oleborn.taskbot.updatehandler.handlers.interfaces.CommandHandler;
 import oleborn.taskbot.utils.OutputMessages;
 import oleborn.taskbot.utils.RandomPictures;
@@ -46,9 +47,9 @@ public class CommandHandlerImpl implements CommandHandler {
         switch (command) {
             case "/start" -> {
 
-                Optional<ProfileDto> profileDto = profileService.getProfileByID(update.getMessage().getFrom().getId());
+                ProfileDto profileDto = profileService.getProfileByIDForStart(UpdateHandlerImpl.searchId(update));
 
-                if (profileDto.isEmpty()) {
+                if (profileDto == null) {
                     profileService.createProfile(update);
                     outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
                             update,

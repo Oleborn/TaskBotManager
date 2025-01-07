@@ -4,17 +4,13 @@ import jakarta.annotation.Resource;
 import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.service.OutputService;
 import oleborn.taskbot.service.interfaces.TaskService;
-import oleborn.taskbot.utils.outputMethods.OutputsMethods;
-import oleborn.taskbot.utils.outputMethods.TimeProcessingMethods;
+import oleborn.taskbot.utils.TimeProcessingMethods;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @Component

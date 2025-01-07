@@ -6,7 +6,7 @@ import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.model.entities.Task;
 import oleborn.taskbot.repository.TaskRepository;
 import oleborn.taskbot.service.interfaces.TaskService;
-import oleborn.taskbot.utils.outputMethods.TimeProcessingMethods;
+import oleborn.taskbot.utils.TimeProcessingMethods;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
