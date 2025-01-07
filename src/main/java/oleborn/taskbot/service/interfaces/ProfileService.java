@@ -2,11 +2,9 @@ package oleborn.taskbot.service.interfaces;
 
 
 import oleborn.taskbot.model.dto.ProfileDto;
-import oleborn.taskbot.model.dto.ProfileSelfDataDto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
-import java.util.Optional;
 
 
 public interface ProfileService {
@@ -15,9 +13,7 @@ public interface ProfileService {
 
     void updateProfile(ProfileDto profile);
 
-    void deleteProfile(ProfileDto profileDto);
-
-    ProfileDto getProfileByIDForStart(Long id);
+    void deleteProfile(Long id);
 
     ProfileDto getProfileByID(Long id);
 
@@ -25,6 +21,6 @@ public interface ProfileService {
 
     List<ProfileDto> getFriends(Long id);
 
-    void setSelfDateProfile(ProfileSelfDataDto dto);
+//    void saveSelfDateProfile(ProfileSelfDataDto dto);
 
 }

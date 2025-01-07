@@ -47,7 +47,7 @@ public class CommandHandlerImpl implements CommandHandler {
         switch (command) {
             case "/start" -> {
 
-                ProfileDto profileDto = profileService.getProfileByIDForStart(UpdateHandlerImpl.searchId(update));
+                ProfileDto profileDto = profileService.getProfileByID(UpdateHandlerImpl.searchId(update));
 
                 if (profileDto == null) {
                     profileService.createProfile(update);

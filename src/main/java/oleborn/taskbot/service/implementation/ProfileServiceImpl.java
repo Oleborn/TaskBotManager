@@ -41,39 +41,28 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public void updateProfile(ProfileDto profileDto) {
-        Profile profileEntity = profileRepository.findById(profileDto.getTelegramId())
-                .orElseThrow(() -> new RuntimeException("ПОКА ТЕСТ updateProfile"));
+        Profile profileEntity = profileRepository.findById(profileDto.getTelegramId()).orElse(null);
         //обновляем статус так как в форме он не получается
-        profileDto.setCommunicationStatus(profileEntity.getCommunicationStatus());
-
+        if (profileDto.getCommunicationStatus() == null) {
+            profileDto.setCommunicationStatus(profileEntity.getCommunicationStatus());
+        }
         profileMapper.updateProfileEntityFromDto(profileDto, profileEntity);
         profileRepository.save(profileEntity);
     }
 
     @Override
-    public void deleteProfile(ProfileDto profileDto) {
-        profileRepository.deleteById(profileDto.getTelegramId());
-    }
-
-    @Override
-    public ProfileDto getProfileByIDForStart(Long id) {
-        Profile profile = profileRepository.findById(id).orElse(null);
-        return profileMapper.toDto(profile);
+    public void deleteProfile(Long id) {
+        profileRepository.deleteById(id);
     }
 
     @Override
     public ProfileDto getProfileByID(Long id) {
-        return profileMapper.toDto(
-                profileRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("Профиль с id " + id + " не найден"))
-        );
+        return profileMapper.toDto(profileRepository.findById(id).orElse(null));
     }
 
     @Override
     public ProfileDto getProfileByTelegramName(String telegramNickName) {
-        Profile profile = profileRepository.findProfileByNickName(telegramNickName)
-                .orElseThrow(() -> new RuntimeException("Профиль с telegramNickName " + telegramNickName + " не найден"));
-        return profileMapper.toDto(profile);
+        return profileMapper.toDto(profileRepository.findProfileByNickName(telegramNickName).orElse(null));
     }
 
     @Override
@@ -83,19 +72,19 @@ public class ProfileServiceImpl implements ProfileService {
                 .toList();
     }
 
-    @Override
-    public void setSelfDateProfile(ProfileSelfDataDto dto) {
-        Optional<Profile> profileEntity = profileRepository.findById(dto.getTelegramId());
-
-        if (profileEntity.isPresent()) {
-            ProfileDto profileDto = ProfileDto.builder()
-                    .yourselfName(dto.getYourselfName())
-                    .yourselfDateOfBirth(dto.getYourselfDateOfBirth())
-                    .yourselfDescription(dto.getYourselfDescription())
-                    .timeZone(dto.getTimeZone())
-                    .build();
-
-            profileRepository.save(profileMapper.fromDto(profileDto));
-        }
-    }
+//    @Override
+//    public void saveSelfDateProfile(ProfileSelfDataDto dto) {
+//        Optional<Profile> profileEntity = profileRepository.findById(dto.getTelegramId());
+//
+//        if (profileEntity.isPresent()) {
+//            ProfileDto profileDto = ProfileDto.builder()
+//                    .yourselfName(dto.getYourselfName())
+//                    .yourselfDateOfBirth(dto.getYourselfDateOfBirth())
+//                    .yourselfDescription(dto.getYourselfDescription())
+//                    .timeZone(dto.getTimeZone())
+//                    .build();
+//
+//            profileRepository.save(profileMapper.fromDto(profileDto));
+//        }
+//    }
 }

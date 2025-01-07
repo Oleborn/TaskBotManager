@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/profile")
@@ -23,22 +22,11 @@ public class ProfileController {
     @Resource
     private OutputsMethods outputsMethods;
 
-    @GetMapping("/{userId}/friends")
-    public List<ProfileDto> getFriends(@PathVariable Long userId) {
-        return profileService.getFriends(userId);
-    }
-
-    @PostMapping("/data")
-    public ResponseEntity<Void> getProfile(@RequestBody ProfileSelfDataDto dto) {
-        profileService.setSelfDateProfile(dto);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/{telegramId}")
-    public ResponseEntity<ProfileDto> getProfile(@PathVariable long telegramId) {
-        ProfileDto profile = profileService.getProfileByID(telegramId);
-        return ResponseEntity.ok(profile);
-    }
+//    @PostMapping("/saveData")
+//    public ResponseEntity<Void> saveProfile(@RequestBody ProfileSelfDataDto dto) {
+//        profileService.saveSelfDateProfile(dto);
+//        return ResponseEntity.ok().build();
+//    }
 
     @PostMapping
     public ResponseEntity<Void> updateProfile(@RequestBody ProfileDto profileDto) {
@@ -54,5 +42,18 @@ public class ProfileController {
         );
 
         return ResponseEntity.ok().build();
+    }
+
+
+    //--------Запросы форм ---------//
+    @GetMapping("/{telegramId}")
+    public ResponseEntity<ProfileDto> getProfile(@PathVariable long telegramId) {
+        ProfileDto profile = profileService.getProfileByID(telegramId);
+        return ResponseEntity.ok(profile);
+    }
+
+    @GetMapping("/{userId}/friends")
+    public List<ProfileDto> getFriends(@PathVariable Long userId) {
+        return profileService.getFriends(userId);
     }
 }
