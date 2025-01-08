@@ -1,10 +1,8 @@
 package oleborn.taskbot.service.implementation;
 
 import jakarta.annotation.Resource;
-import jakarta.persistence.EntityNotFoundException;
 import oleborn.taskbot.mapper.ProfileMapper;
 import oleborn.taskbot.model.dto.ProfileDto;
-import oleborn.taskbot.model.dto.ProfileSelfDataDto;
 import oleborn.taskbot.model.entities.Profile;
 import oleborn.taskbot.repository.ProfileRepository;
 import oleborn.taskbot.service.interfaces.ProfileService;
@@ -14,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -67,10 +64,18 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public List<ProfileDto> getFriends(Long id) {
-        return profileRepository.findFriendsById(id).stream()
+        return profileRepository.findProfilesWhoICanSendMessages(id).stream()
                 .map(profile -> profileMapper.toDto(profile))
                 .toList();
     }
+
+    @Override
+    public List<ProfileDto> getSenderMeTasks(Long id) {
+        return profileRepository.findProfilesWhoCanReceiveMessages(id).stream()
+                .map(profile -> profileMapper.toDto(profile))
+                .toList();
+    }
+
 
 //    @Override
 //    public void saveSelfDateProfile(ProfileSelfDataDto dto) {

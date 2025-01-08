@@ -92,7 +92,7 @@
     Загрузка данных...
 </div>
 
-<form id="taskForm" action="/task/update" method="POST" onsubmit="return handleSubmit(event)">
+<form id="taskForm" onsubmit="return handleSubmit(event)">
     <!-- Скрытые поля -->
     <input type="hidden" id="user_id" name="user_id" value="">
     <input type="hidden" id="task_id" name="task_id" value="">
@@ -240,41 +240,54 @@
     function handleSubmit(event) {
         event.preventDefault();
 
+        // Получаем значения из формы
+        const userId = document.getElementById('user_id').value;
+        const taskId = document.getElementById('task_id').value;
         const recipientValue = document.getElementById('recipientSelect').value;
-        document.getElementById('recipient').value = recipientValue === "self"
-            ? document.getElementById('user_id').value
-            : recipientValue;
+        const recipient = recipientValue === "self" ? userId : recipientValue;
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const localDate = document.getElementById('localDate').value; // Формат: YYYY-MM-DD
+        const localTime = document.getElementById('localTime').value; // Формат: HH:mm
 
-        const formData = new URLSearchParams();
-        formData.append('task_id', document.getElementById('task_id').value);
-        formData.append('user_id', document.getElementById('user_id').value);
-        formData.append('recipient', document.getElementById('recipient').value);
-        formData.append('title', document.getElementById('title').value);
-        formData.append('description', document.getElementById('description').value);
-        formData.append('localDate', document.getElementById('localDate').value);
-        formData.append('localTime', document.getElementById('localTime').value);
+        // Объединяем дату и время в формат LocalDateTime (YYYY-MM-DDTHH:mm:ss)
+        const dateSending = `${localDate}T${localTime}:00`;
 
+        // Создаем объект для отправки
+        const taskData = {
+            id: parseInt(taskId), // ID задачи
+            ownerId: parseInt(recipient), // ID получателя
+            creatorId: parseInt(userId),  // ID создателя
+            title: title,
+            description: description,
+            dateSending: dateSending, // Объединенная дата и время
+            timeZoneOwner: "UTC", // Укажите нужный часовой пояс
+            sent: false,
+            updated: true // Помечаем задачу как обновленную
+        };
 
+        // Отправляем данные на сервер
         fetch('/task/update', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json'
             },
-            body: formData.toString(),
+            body: JSON.stringify(taskData)
         })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error("Ошибка обновления задачи.");
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Ошибка сервера');
                 }
-                return response.text();
             })
-            .then(() => {
+            .then(data => {
                 showMessage("Задача успешно обновлена!", true);
                 setTimeout(() => Telegram.WebApp.close(), 2000);
             })
             .catch(error => {
-                console.error("Ошибка отправки формы:", error);
-                showMessage("Ошибка при сохранении изменений. Попробуйте еще раз.", false, null, `Диагностика: ${error.message}`);
+                showMessage("Произошла ошибка при отправке данных. Попробуйте еще раз.");
+                console.error("Ошибка отправки формы: ", error);
             });
     }
 </script>

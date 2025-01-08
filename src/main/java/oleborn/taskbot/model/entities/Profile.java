@@ -35,8 +35,8 @@ public class Profile {
     @ManyToMany
     @JoinTable(
             name = "profile_messages",
-            joinColumns = @JoinColumn(name = "sender_profile_id"),
-            inverseJoinColumns = @JoinColumn(name = "receiver_profile_id")
+            joinColumns = @JoinColumn(name = "receiver_profile_id"),
+            inverseJoinColumns = @JoinColumn(name = "sender_profile_id")
     )
     @Builder.Default
     private List<Profile> listProfilesWhoCanSendMessages = new ArrayList<>();

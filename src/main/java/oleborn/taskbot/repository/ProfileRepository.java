@@ -12,9 +12,16 @@ import java.util.Optional;
 @Repository
 public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
-    @Query("SELECT p.listProfilesWhoCanSendMessages FROM Profile p WHERE p.telegramId = :id")
-    List<Profile> findFriendsById(@Param("id") Long id);
-
     Optional<Profile> findProfileByNickName(String nickName);
+
+    // Запрос списка тех кто может отправлять Profile сообщения
+    @Query(value = "SELECT p.* FROM profile p " +
+            "JOIN profile_messages pm ON p.telegram_id = pm.receiver_profile_id " +
+            "WHERE pm.sender_profile_id = ?1", nativeQuery = true)
+    List<Profile> findProfilesWhoCanReceiveMessages(Long senderId);
+
+    // Запрос списка тех кому Profile может отправлять сообщения
+    @Query("SELECT p.listProfilesWhoCanSendMessages FROM Profile p WHERE p.telegramId = :id")
+    List<Profile> findProfilesWhoICanSendMessages(@Param("id") Long id);
 
 }

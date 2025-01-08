@@ -2,8 +2,8 @@ package oleborn.taskbot.updatehandler.handlers;
 
 import jakarta.annotation.Resource;
 import oleborn.taskbot.model.dto.ProfileDto;
+import oleborn.taskbot.model.dto.ProfileToSendTaskDto;
 import oleborn.taskbot.model.dto.TaskDto;
-import oleborn.taskbot.model.entities.Profile;
 import oleborn.taskbot.model.entities.Task;
 import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.service.interfaces.TaskService;
@@ -21,7 +21,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static oleborn.taskbot.utils.CommunicationStatus.INPUT_FRIEND;
@@ -93,11 +92,11 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                 if (profileDto.getListProfilesWhoCanSendMessages().isEmpty()) {
                     outputMessages = RETURN_PROFILE_NO_FRIENDS.getTextMessage();
                 } else {
-                    outputMessages = RETURN_PROFILE_FRIENDS.getTextMessage().formatted(
+                    outputMessages = RETURN_PROFILE_RECEIVE_MESSAGE.getTextMessage().formatted(
                             profileDto.getListProfilesWhoCanSendMessages().stream()
-                                    .map((Profile t) -> profileDto.getNickName()) // Извлекаем nickName
+                                    .map(ProfileToSendTaskDto::getNickName) // Извлекаем nickName
                                     .filter(Objects::nonNull)    // Убираем возможные null значения
-                                    .collect(Collectors.joining("\n,")) // Соединяем через перенос строки
+                                    .collect(Collectors.joining("\n")) // Соединяем через перенос строки
                     );
                 }
 

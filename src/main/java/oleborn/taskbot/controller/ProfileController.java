@@ -54,6 +54,6 @@ public class ProfileController {
 
     @GetMapping("/{userId}/friends")
     public List<ProfileDto> getFriends(@PathVariable Long userId) {
-        return profileService.getFriends(userId);
+        return profileService.getSenderMeTasks(userId);
     }
 }

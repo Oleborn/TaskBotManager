@@ -17,7 +17,7 @@ public class ProfileDto {
     String yourselfName;
     String yourselfDateOfBirth;
     String yourselfDescription;
-    List<Profile> listProfilesWhoCanSendMessages;
+    List<ProfileToSendTaskDto> listProfilesWhoCanSendMessages;
     String nickName;
     Long telegramId;
     CommunicationStatus communicationStatus;

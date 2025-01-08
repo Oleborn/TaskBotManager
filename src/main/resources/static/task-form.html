@@ -80,7 +80,7 @@
 
 </div>
 
-<form id="taskForm" action="/task" method="POST" onsubmit="return handleSubmit(event)">
+<form id="taskForm" onsubmit="return handleSubmit(event)">
     <input type="hidden" id="user_id" name="user_id" value="">
     <input type="hidden" id="recipient" name="recipient" value="">
 
@@ -118,7 +118,7 @@
                     friends.forEach(friend => {
                         const option = document.createElement('option');
                         option.value = friend.id;
-                        option.textContent = friend.telegramNickname;
+                        option.textContent = friend.nickName || "Ник не задан. Кто это хер знает...";
                         recipientSelect.appendChild(option);
                     });
                 })
@@ -136,19 +136,42 @@
     function handleSubmit(event) {
         event.preventDefault();
 
+        // Получаем значения из формы
+        const userId = document.getElementById('user_id').value;
         const recipientValue = document.getElementById('recipientSelect').value;
-        document.getElementById('recipient').value = recipientValue === "self"
-            ? document.getElementById('user_id').value
-            : recipientValue;
+        const recipient = recipientValue === "self" ? userId : recipientValue;
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const localDate = document.getElementById('localDate').value;
+        const localTime = document.getElementById('localTime').value;
 
-        const form = event.target;
-        const formData = new FormData(form);
+        // Создаем объект для отправки
+        const taskData = {
+            ownerId: parseInt(recipient), // ID получателя
+            creatorId: parseInt(userId),  // ID создателя
+            title: title,
+            description: description,
+            dateSending: `${localDate}T${localTime}:00`, // Формат LocalDateTime
+            timeZoneOwner: "UTC", // Укажите нужный часовой пояс
+            sent: false,
+            updated: false
+        };
 
-        fetch(form.action, {
+        // Отправляем данные на сервер
+        fetch('/task', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(taskData)
         })
-            .then(response => response.text())
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Ошибка сервера');
+                }
+            })
             .then(data => {
                 showMessage("Задача успешно создана!", true);
                 Telegram.WebApp.close();

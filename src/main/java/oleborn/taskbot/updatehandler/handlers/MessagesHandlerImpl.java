@@ -3,6 +3,7 @@ package oleborn.taskbot.updatehandler.handlers;
 import jakarta.annotation.Resource;
 import oleborn.taskbot.mapper.ProfileMapper;
 import oleborn.taskbot.model.dto.ProfileDto;
+import oleborn.taskbot.model.dto.ProfileToSendTaskDto;
 import oleborn.taskbot.model.entities.Profile;
 import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.updatehandler.UpdateHandlerImpl;
@@ -51,23 +52,35 @@ public class MessagesHandlerImpl implements MessagesHandler {
         switch (profileDto.getCommunicationStatus()){
             case DEFAULT -> {}
             case INPUT_FRIEND -> {
-                ProfileDto profileClient = profileService.getProfileByTelegramName(update.getMessage().getText());
-                if (profileClient == null) {
+                ProfileDto profileFriend = profileService.getProfileByTelegramName(update.getMessage().getText());
+                ProfileDto profileClient = profileService.getProfileByID(update.getMessage().getFrom().getId());
+
+                if (profileFriend == null) {
                     outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
                             update.getMessage().getFrom().getId(),
                             OutputMessages.FRIEND_NOT_FOUND.getTextMessage(),
                             RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture(),
                             new InlineKeyboardBuilder().addButton("В начало", "/start").build()
                     );
+                    profileClient.setCommunicationStatus(CommunicationStatus.DEFAULT);
+                    profileService.updateProfile(profileClient);
                     return;
                 }
 
-                ProfileDto profile = profileService.getProfileByTelegramName(update.getMessage().getText());
-                List<Profile> friends = profile.getListProfilesWhoCanSendMessages();
-                friends.add(profileMapper.fromDto(profileClient));
-                profile.setListProfilesWhoCanSendMessages(friends);
+
+                List<ProfileToSendTaskDto> listProfilesWhoCanSendMessages = profileClient.getListProfilesWhoCanSendMessages();
+
+                listProfilesWhoCanSendMessages.add(profileMapper.toShortDto(profileMapper.fromDto(profileFriend)));
+                profileClient.setListProfilesWhoCanSendMessages(listProfilesWhoCanSendMessages);
                 profileClient.setCommunicationStatus(CommunicationStatus.DEFAULT);
-                profileService.updateProfile(profile);
+                profileService.updateProfile(profileClient);
+
+                outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
+                        update.getMessage().getFrom().getId(),
+                        OutputMessages.FRIEND_ADDED.getTextMessage(),
+                        RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture(),
+                        new InlineKeyboardBuilder().addButton("В начало", "/start").build()
+                );
             }
         }
 
