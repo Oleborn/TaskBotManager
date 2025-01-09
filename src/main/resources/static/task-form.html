@@ -117,8 +117,9 @@
                     const recipientSelect = document.getElementById('recipientSelect');
                     friends.forEach(friend => {
                         const option = document.createElement('option');
-                        option.value = friend.id;
-                        option.textContent = friend.nickName || "Ник не задан. Кто это хер знает...";
+                        option.value = friend.telegramId;
+                        option.textContent = friend.nickName || "Ник не задан. Кто это, хер знает...";
+                        option.setAttribute('data-timezone', friend.timeZone); // Добавляем часовой пояс
                         recipientSelect.appendChild(option);
                     });
                 })
@@ -145,6 +146,11 @@
         const localDate = document.getElementById('localDate').value;
         const localTime = document.getElementById('localTime').value;
 
+        // Извлекаем часовой пояс из выбранной опции
+        const recipientSelect = document.getElementById('recipientSelect');
+        const selectedOption = recipientSelect.options[recipientSelect.selectedIndex];
+        const timeZoneOwner = selectedOption.getAttribute('data-timezone'); // Точное значение из ProfileDto
+
         // Создаем объект для отправки
         const taskData = {
             ownerId: parseInt(recipient), // ID получателя
@@ -152,7 +158,7 @@
             title: title,
             description: description,
             dateSending: `${localDate}T${localTime}:00`, // Формат LocalDateTime
-            timeZoneOwner: "UTC", // Укажите нужный часовой пояс
+            timeZoneOwner: timeZoneOwner, // Укажите нужный часовой пояс
             sent: false,
             updated: false
         };

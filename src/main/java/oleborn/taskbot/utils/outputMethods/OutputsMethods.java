@@ -2,6 +2,7 @@ package oleborn.taskbot.utils.outputMethods;
 
 import lombok.extern.slf4j.Slf4j;
 import oleborn.taskbot.bot.Bot;
+import oleborn.taskbot.model.dto.ProfileToSendTaskDto;
 import oleborn.taskbot.model.entities.Task;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -184,6 +185,21 @@ public class OutputsMethods extends Bot {
             var next = createButtonMenuForInline(
                     "Созданное в " + task.getDateCreated().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")),
                     "savedTask_" + task.getId()
+            );
+            keyboard.add(List.of(next));
+        }
+        markup.setKeyboard(keyboard);
+        return markup;
+    }
+
+    public InlineKeyboardMarkup createButtonInColumnSavedSenders(List<ProfileToSendTaskDto> list) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        for (ProfileToSendTaskDto profileToSendTaskDto : list) {
+            var next = createButtonMenuForInline(
+                    "Nickname: " + profileToSendTaskDto.getNickName(),
+                    "deleteSenders_" + profileToSendTaskDto.getTelegramId()
             );
             keyboard.add(List.of(next));
         }

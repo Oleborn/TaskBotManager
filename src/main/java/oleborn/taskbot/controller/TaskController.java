@@ -42,7 +42,7 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity<Void> createTask(@RequestBody TaskDto taskDto) {
-
+        //Получаем профиль того кому устанавливается таска
         ProfileDto profileByID = profileService.getProfileByID(taskDto.getOwnerId());
 
         taskService.createTask(TaskDto.builder()
@@ -51,12 +51,12 @@ public class TaskController {
                 .title(taskDto.getTitle())
                 .description(taskDto.getDescription())
                 .dateSending(taskDto.getDateSending())
-                .timeZoneOwner(profileByID.getTimeZone()) //TODO тут должен быть часовой пояс того кому придет уведомление
+                .timeZoneOwner(profileByID.getTimeZone()) //тут часовой пояс того кому придет уведомление
                 .sent(false)
                 .updated(false)
                 .build());
 
-        // Форматирование в строку с нужным паттерном
+        // Форматирование даты в строку с нужным паттерном
         String formattedTime = taskDto.getDateSending().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
 
         outputsMethods.outputMessageWithCaptureAndInlineKeyboard(

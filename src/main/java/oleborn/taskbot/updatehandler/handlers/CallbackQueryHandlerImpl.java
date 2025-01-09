@@ -1,6 +1,7 @@
 package oleborn.taskbot.updatehandler.handlers;
 
 import jakarta.annotation.Resource;
+import oleborn.taskbot.mapper.ProfileMapper;
 import oleborn.taskbot.model.dto.ProfileDto;
 import oleborn.taskbot.model.dto.ProfileToSendTaskDto;
 import oleborn.taskbot.model.dto.TaskDto;
@@ -41,6 +42,9 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
     private ProfileService profileService;
 
     @Resource
+    private ProfileMapper profileMapper;
+
+    @Resource
     private TimeProcessingMethods timeProcessingMethods;
 
     @Value("${taskbot.provider}")
@@ -56,18 +60,23 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
         }
 
         if (update.getCallbackQuery().getData().startsWith("savedTask")) {
-            tasksViewHandler(update);
+            taskViewHandler(update);
             return;
         }
         if (update.getCallbackQuery().getData().startsWith("deleteTask")) {
-            deleteMethod(update);
+            deleteTaskMethod(update);
+            return;
+        }
+
+        if (update.getCallbackQuery().getData().startsWith("deleteSenders")) {
+            deleteSendersMethod(update);
             return;
         }
 
         switch (update.getCallbackQuery().getData()) {
             case "saveTasks" -> {
                 //Для верного отображения ответа проверяем пустой ли список тасков
-                List<Task> allTasks = taskService.findAllTasks(update.getCallbackQuery().getFrom().getId());
+                List<Task> allTasks = taskService.findAllTasksByOwnerId(update.getCallbackQuery().getFrom().getId());
                 boolean isEmpty = allTasks.isEmpty();
 
                 String outputMessage = isEmpty ? RETURN_NO_SAVES_TASKS.getTextMessage() : RETURN_SAVES_TASKS.getTextMessage();
@@ -116,7 +125,7 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                                 .nextRow()
                                 .addButton("Добавить друзей в список", "list_friend_add")
                                 .nextRow()
-                                .addButton("Изменить список друзей", "list_friend_update")
+                                .addButton("Удалить друзей из списка", "list_friend_delete")
                                 .build()
 
                 );
@@ -132,7 +141,25 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                         FRIEND_MESSAGE_FOR_ADDED.getTextMessage(),
                         RandomPictures.RANDOM_BOT_START.getRandomNamePicture());
             }
-            case "list_friend_update" -> {}
+            case "list_friend_delete" -> {
+                ProfileDto profileDto = profileService.getProfileByID(UpdateHandlerImpl.searchId(update));
+
+                List<ProfileToSendTaskDto> listSenders = profileDto.getListProfilesWhoCanSendMessages();
+
+                boolean isEmpty = listSenders.isEmpty();
+
+                String outputMessage = isEmpty ? RETURN_NO_SAVES_FRIENDS.getTextMessage() : RETURN_SAVES_FRIENDS.getTextMessage();
+                InlineKeyboardMarkup inlineKeyboardMarkup = isEmpty
+                        ? new InlineKeyboardBuilder().addButton("В начало", "/start").build()
+                        : outputsMethods.createButtonInColumnSavedSenders(listSenders);
+
+                outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
+                        update,
+                        outputMessage,
+                        RandomPictures.RANDOM_BOT_START.getRandomNamePicture(),
+                        inlineKeyboardMarkup
+                );
+            }
             // выходит список друзей, тех кто может направлять напоминания тебе
             // 2 кнопки - добавить и редактировать
             // при добавлении строка ждет ник телеграмма, проверяет в БД на наличие и добавляет
@@ -141,7 +168,7 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
         }
     }
 
-    private void tasksViewHandler(Update update) {
+    private void taskViewHandler(Update update) {
         String[] name = update.getCallbackQuery().getData().split("_");
         TaskDto taskDto = taskService.getTaskByID(Long.valueOf(name[1]));
         outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
@@ -176,7 +203,7 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
      */
 
 
-    private void deleteMethod(Update update) {
+    private void deleteTaskMethod(Update update) {
         String[] name = update.getCallbackQuery().getData().split("_");
         TaskDto taskDto = taskService.getTaskByID(Long.valueOf(name[1]));
         taskService.deleteTask(taskDto);
@@ -187,6 +214,35 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
                 new InlineKeyboardBuilder()
                         .addButton("Вернуться в начало", "/start")
                         .build()
+        );
+    }
+
+    private void deleteSendersMethod(Update update) {
+        String[] name = update.getCallbackQuery().getData().split("_");
+        ProfileToSendTaskDto profileDtoDeletingSender = profileMapper.toShortDto(profileService.getProfileByID(Long.valueOf(name[1])));
+        ProfileDto profileDtoClient = profileService.getProfileByID(UpdateHandlerImpl.searchId(update));
+
+        List<ProfileToSendTaskDto> listProfilesWhoCanSendMessages = profileDtoClient.getListProfilesWhoCanSendMessages();
+
+        if (listProfilesWhoCanSendMessages.contains(profileDtoDeletingSender)){
+            profileDtoClient.getListProfilesWhoCanSendMessages().remove(profileDtoDeletingSender);
+        }
+
+        profileService.updateProfile(profileDtoClient);
+
+        outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
+                update,
+                OutputMessages.FRIEND_DELETED.getTextMessage().formatted(profileDtoDeletingSender.getNickName()),
+                RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture(),
+                new InlineKeyboardBuilder()
+                        .addButton("Вернуться в начало", "/start")
+                        .build()
+        );
+
+        outputsMethods.outputMessageWithCapture(
+                profileDtoDeletingSender.getTelegramId(),
+                OutputMessages.MESSAGES_FRIEND_DELETED.getTextMessage().formatted(profileDtoClient.getNickName()),
+                RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture()
         );
     }
 }

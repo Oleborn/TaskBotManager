@@ -43,7 +43,12 @@ public class ProfileServiceImpl implements ProfileService {
         if (profileDto.getCommunicationStatus() == null) {
             profileDto.setCommunicationStatus(profileEntity.getCommunicationStatus());
         }
+        //обновляем список друзей так как в форме он не получается
+        if (profileDto.getListProfilesWhoCanSendMessages() == null) {
+            profileDto.setListProfilesWhoCanSendMessages(profileMapper.toShortDtoList(profileEntity.getListProfilesWhoCanSendMessages()));
+        }
         profileMapper.updateProfileEntityFromDto(profileDto, profileEntity);
+
         profileRepository.save(profileEntity);
     }
 

@@ -19,5 +19,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findAllByOwnerId(Long ownerId);
 
+    List<Task> findAllByCreatorId(Long creatorId);
+
 }
 

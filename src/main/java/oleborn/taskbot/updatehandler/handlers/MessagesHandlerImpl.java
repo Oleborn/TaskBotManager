@@ -81,10 +81,13 @@ public class MessagesHandlerImpl implements MessagesHandler {
                         RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture(),
                         new InlineKeyboardBuilder().addButton("В начало", "/start").build()
                 );
+
+                outputsMethods.outputMessageWithCapture(
+                        profileFriend.getTelegramId(),
+                        OutputMessages.MESSAGES_FRIEND_ADDED.getTextMessage().formatted(profileClient.getNickName()),
+                        RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture()
+                );
             }
         }
-
-
-
     }
 }

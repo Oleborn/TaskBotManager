@@ -4,7 +4,6 @@ import oleborn.taskbot.model.dto.TaskDto;
 import oleborn.taskbot.model.entities.Task;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface TaskService {
@@ -19,7 +18,9 @@ public interface TaskService {
 
     TaskDto getTaskByID(Long id);
 
-    List<Task> findAllTasks(Long id);
+    List<Task> findAllTasksByOwnerId(Long id);
+
+    List<Task> findAllTasksByCreatorId(Long id);
 
     LocalDateTime createLocalDateTime(String localDate, String localTime);
 

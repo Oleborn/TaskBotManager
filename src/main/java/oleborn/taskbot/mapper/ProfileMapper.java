@@ -19,6 +19,8 @@ public interface ProfileMapper {
 
     ProfileToSendTaskDto toShortDto(Profile profile);
 
+    ProfileToSendTaskDto toShortDto(ProfileDto profileDto);
+
     // Метод для обновления существующего объекта
     void updateProfileEntityFromDto(ProfileDto profileDto, @MappingTarget Profile profileEntity);
 

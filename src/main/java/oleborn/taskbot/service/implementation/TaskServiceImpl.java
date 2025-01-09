@@ -67,8 +67,13 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<Task> findAllTasks(Long id){
+    public List<Task> findAllTasksByOwnerId(Long id){
         return new ArrayList<>(taskRepository.findAllByOwnerId(id));
+    }
+
+    @Override
+    public List<Task> findAllTasksByCreatorId(Long id){
+        return new ArrayList<>(taskRepository.findAllByCreatorId(id));
     }
 
     @Override

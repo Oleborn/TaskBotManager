@@ -201,14 +201,16 @@
                     document.getElementById('description').value = task.description || "";
 
                     // Загружаем друзей для выбора получателя
-                    const recipientSelect = document.getElementById('recipientSelect');
                     fetch(`/profile/${userId}/friends`)
                         .then(response => response.json())
                         .then(friends => {
+                            const recipientSelect = document.getElementById('recipientSelect');
                             friends.forEach(friend => {
                                 const option = document.createElement('option');
                                 option.value = friend.id;
-                                option.textContent = friend.telegramNickname;
+                                option.value = friend.telegramId;
+                                option.textContent = friend.nickName || "Ник не задан. Кто это, хер знает...";
+                                option.setAttribute('data-timezone', friend.timeZone); // Добавляем часовой пояс
                                 recipientSelect.appendChild(option);
                             });
 
@@ -250,8 +252,10 @@
         const localDate = document.getElementById('localDate').value; // Формат: YYYY-MM-DD
         const localTime = document.getElementById('localTime').value; // Формат: HH:mm
 
-        // Объединяем дату и время в формат LocalDateTime (YYYY-MM-DDTHH:mm:ss)
-        const dateSending = `${localDate}T${localTime}:00`;
+        // Извлекаем часовой пояс из выбранной опции
+        const recipientSelect = document.getElementById('recipientSelect');
+        const selectedOption = recipientSelect.options[recipientSelect.selectedIndex];
+        const timeZoneOwner = selectedOption.getAttribute('data-timezone'); // Точное значение из ProfileDto
 
         // Создаем объект для отправки
         const taskData = {
@@ -260,8 +264,8 @@
             creatorId: parseInt(userId),  // ID создателя
             title: title,
             description: description,
-            dateSending: dateSending, // Объединенная дата и время
-            timeZoneOwner: "UTC", // Укажите нужный часовой пояс
+            dateSending: `${localDate}T${localTime}:00`, // Объединяем дату и время в формат LocalDateTime (YYYY-MM-DDTHH:mm:ss)
+            timeZoneOwner: timeZoneOwner, // Укажите нужный часовой пояс
             sent: false,
             updated: true // Помечаем задачу как обновленную
         };
