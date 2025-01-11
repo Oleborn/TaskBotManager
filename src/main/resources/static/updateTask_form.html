@@ -97,6 +97,8 @@
     <input type="hidden" id="user_id" name="user_id" value="">
     <input type="hidden" id="task_id" name="task_id" value="">
     <input type="hidden" id="recipient" name="recipient" value="">
+    <input type="hidden" id="dateCreated" name="dateCreated" value="">
+    <input type="hidden" id="dateModified" name="dateModified" value="">
 
     <!-- Поля формы -->
     <label for="title">Заголовок:</label>
@@ -180,6 +182,18 @@
         }
     }
 
+    // Функция для получения локального времени в формате "YYYY-MM-DDTHH:mm:ss"
+    function getLocalDateTime() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Месяцы начинаются с 0
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    }
+
     // Обработка загрузки страницы
     window.onload = function () {
         if (Telegram.WebApp) {
@@ -251,6 +265,7 @@
                     document.getElementById('localTime').value = formattedDateTime.time;
                     document.getElementById('title').value = task.title || "";
                     document.getElementById('description').value = task.description || "";
+                    document.getElementById('dateCreated').value = task.dateCreated; // Подгружаем dateCreated
 
                     // Загружаем друзей для выбора получателя
                     fetch(`/profile/${userId}/friends`)
@@ -306,6 +321,12 @@
             return;
         }
 
+        // Получаем текущую дату и время в формате ISO (LocalDateTime)
+        const dateModified = getLocalDateTime(); // Используем локальное время
+
+        // Устанавливаем значение скрытого поля dateModified
+        document.getElementById('dateModified').value = dateModified;
+
         // Получаем значения из формы
         const userId = document.getElementById('user_id').value;
         const taskId = document.getElementById('task_id').value;
@@ -315,6 +336,7 @@
         const description = document.getElementById('description').value;
         const localDate = document.getElementById('localDate').value;
         const localTime = document.getElementById('localTime').value;
+        const dateCreated = document.getElementById('dateCreated').value; // Подгруженное значение dateCreated
 
         // Извлекаем часовой пояс из выбранной опции
         const recipientSelect = document.getElementById('recipientSelect');
@@ -328,6 +350,8 @@
             creatorId: parseInt(userId),
             title: title,
             description: description,
+            dateCreated: dateCreated, // Подгруженное значение dateCreated
+            dateModified: dateModified, // Текущая дата и время для dateModified
             dateSending: `${localDate}T${localTime}:00`,
             timeZoneOwner: timeZoneOwner,
             sent: false,

@@ -15,7 +15,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -179,12 +178,12 @@ public class OutputsMethods extends Bot {
 
     public InlineKeyboardMarkup createButtonInColumnSavedTasks(List<Task> list, String methodName) {
         String startNameForTask = "";
-        
+
         if (methodName.equals("created")) {
             startNameForTask = "savedCreatedTask_";
         } else if (methodName.equals("received"))
             startNameForTask = "savedReceivedTask_";
-        
+
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 

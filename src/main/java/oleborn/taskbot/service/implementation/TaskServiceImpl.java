@@ -12,21 +12,20 @@ import oleborn.taskbot.service.interfaces.OutputService;
 import oleborn.taskbot.service.interfaces.ProfileService;
 import oleborn.taskbot.service.interfaces.TaskService;
 import oleborn.taskbot.updatehandler.UpdateHandlerImpl;
-import oleborn.taskbot.utils.*;
+import oleborn.taskbot.utils.TimeProcessingMethods;
 import oleborn.taskbot.utils.outputMethods.InlineKeyboardBuilder;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
-import java.time.*;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static oleborn.taskbot.utils.OutputMessages.*;
-import static oleborn.taskbot.utils.OutputMessages.RETURN_CREATED_TASKS;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -49,7 +48,6 @@ public class TaskServiceImpl implements TaskService {
 
     @Resource
     private ProfileMapper profileMapper;
-
 
 
     @Override
@@ -87,12 +85,12 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<Task> findAllTasksByOwnerId(Long id){
+    public List<Task> findAllTasksByOwnerId(Long id) {
         return new ArrayList<>(taskRepository.findAllByOwnerId(id));
     }
 
     @Override
-    public List<Task> findAllTasksByCreatorId(Long id){
+    public List<Task> findAllTasksByCreatorId(Long id) {
         return new ArrayList<>(taskRepository.findAllByCreatorId(id));
     }
 
@@ -116,7 +114,7 @@ public class TaskServiceImpl implements TaskService {
                 .dateCreated(taskDto.getDateCreated())
                 .dateModified(LocalDateTime.now())
                 .dateSending(
-                      timeProcessingMethods.processLocalTimeToMSKTime(LocalDateTime.now())
+                        timeProcessingMethods.processLocalTimeToMSKTime(LocalDateTime.now())
                 )
                 .sent(true)
                 .updated(taskDto.isUpdated())
@@ -135,6 +133,7 @@ public class TaskServiceImpl implements TaskService {
                 .creatorId(taskDto.getCreatorId())
                 .title(taskDto.getTitle())
                 .description(taskDto.getDescription())
+                .dateCreated(taskDto.getDateCreated())
                 // тут надо приводить к МСК
                 .dateSending(timeProcessingMethods.processingTimeToMSK(
                         taskDto.getDateSending(), Integer.parseInt(profileService.getProfileByID(taskDto.getCreatorId()).getTimeZone()))
@@ -160,6 +159,8 @@ public class TaskServiceImpl implements TaskService {
                 .creatorId(taskDto.getCreatorId())
                 .title(taskDto.getTitle())
                 .description(taskDto.getDescription())
+                .dateCreated(taskDto.getDateCreated())
+                .dateModified(taskDto.getDateModified())
                 .dateSending(timeProcessingMethods.processingTimeToMSK(
                         taskDto.getDateSending(), Integer.parseInt(profileService.getProfileByID(taskDto.getCreatorId()).getTimeZone()))
                 )
@@ -219,7 +220,7 @@ public class TaskServiceImpl implements TaskService {
 
         List<ProfileToSendTaskDto> listProfilesWhoCanSendMessages = profileDtoClient.getListProfilesWhoCanSendMessages();
 
-        if (listProfilesWhoCanSendMessages.contains(profileDtoDeletingSender)){
+        if (listProfilesWhoCanSendMessages.contains(profileDtoDeletingSender)) {
             profileDtoClient.getListProfilesWhoCanSendMessages().remove(profileDtoDeletingSender);
         }
 

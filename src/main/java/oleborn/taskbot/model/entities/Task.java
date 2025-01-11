@@ -57,14 +57,4 @@ public class Task {
     @Column
     private boolean updated;
 
-    @PrePersist
-    protected void onCreate() {
-        dateCreated = LocalDateTime.now();
-        dateModified = dateCreated;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        dateModified = LocalDateTime.now();
-    }
 }
