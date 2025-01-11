@@ -23,6 +23,7 @@ public class TimeProcessingMethods {
         }
     }
 
+    //преобразует любое серверное время к МСК
     public LocalDateTime processLocalTimeToMSKTime(LocalDateTime localDateTime) {
         return localDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("Europe/Moscow")).toLocalDateTime();
     }

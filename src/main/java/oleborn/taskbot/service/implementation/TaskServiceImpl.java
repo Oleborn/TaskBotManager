@@ -128,19 +128,23 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void createTaskInController(TaskDto taskDto) {
         //Получаем профиль того кому устанавливается таска
-        ProfileDto profileByID = profileService.getProfileByID(taskDto.getOwnerId());
+        ProfileDto profileByIDOwner = profileService.getProfileByID(taskDto.getOwnerId());
         //Получаем профиль того кто установил таску
+        ProfileDto profileByIDCreator = profileService.getProfileByID(taskDto.getCreatorId());
 
         createTask(TaskDto.builder()
                 .ownerId(taskDto.getOwnerId())
                 .creatorId(taskDto.getCreatorId())
                 .title(taskDto.getTitle())
                 .description(taskDto.getDescription())
+                .dateCreated(timeProcessingMethods.processLocalTimeToMSKTime(LocalDateTime.now())
+                        //Тут КОСТЫЛЬ! приводим к поясному времени создателя простым сложением
+                        .plusHours(Long.parseLong(profileByIDCreator.getTimeZone())))
                 // тут надо приводить к МСК
                 .dateSending(timeProcessingMethods.processingTimeToMSK(
                         taskDto.getDateSending(), Integer.parseInt(profileService.getProfileByID(taskDto.getCreatorId()).getTimeZone()))
                 )
-                .timeZoneOwner(profileByID.getTimeZone()) //тут часовой пояс того кому придет уведомление
+                .timeZoneOwner(profileByIDOwner.getTimeZone()) //тут часовой пояс того кому придет уведомление
                 .sent(false)
                 .updated(false)
                 .build());

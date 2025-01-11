@@ -29,15 +29,6 @@ public class CallbackQueryHandlerImpl implements CallbackQueryHandler {
     @Resource
     private ProfileService profileService;
 
-    @Resource
-    private ProfileMapper profileMapper;
-
-    @Resource
-    private TimeProcessingMethods timeProcessingMethods;
-
-    @Value("${taskbot.provider}")
-    private String provider;
-
 
     @Override
     public void handlerCallbackQuery(Update update) {
