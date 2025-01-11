@@ -162,11 +162,10 @@ public class OutputServiceImpl implements OutputService {
                 OutputMessages.RETURN_UPDATE_TASK.getTextMessage().formatted(
                         taskDto.getTitle(),
                         taskDto.getDescription(),
-                        timeProcessingMethods.processLocalTimeToMSKTime(LocalDateTime.parse(taskDto.getDateCreated()
-                                .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat()))))
+                        timeProcessingMethods.processLocalTimeToMSKTime(taskDto.getDateCreated())
                                 //КОСТЫЛЬ!!! прибавляю разницу к МСК
-                                .plusHours(Long.parseLong(profileDtoCreator.getTimeZone())),
-
+                                .plusHours(Long.parseLong(profileDtoCreator.getTimeZone()))
+                                .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
                         //перевести часовой пояс из string в int и прибавить к taskDto.getDateSending()
                         timeProcessingMethods.processMSKTimeToLocalTimeForProfile(taskDto)
                                 .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
@@ -223,10 +222,10 @@ public class OutputServiceImpl implements OutputService {
                 OutputMessages.RETURN_UPDATE_TASK.getTextMessage().formatted(
                         taskDto.getTitle(),
                         taskDto.getDescription(),
-                        timeProcessingMethods.processLocalTimeToMSKTime(LocalDateTime.parse(taskDto.getDateCreated()
-                                        .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat()))))
+                        timeProcessingMethods.processLocalTimeToMSKTime(taskDto.getDateCreated())
                                 //КОСТЫЛЬ!!! прибавляю разницу к МСК
-                                .plusHours(Long.parseLong(profileDtoCreator.getTimeZone())),
+                                .plusHours(Long.parseLong(profileDtoCreator.getTimeZone()))
+                                .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
                         //перевести часовой пояс из string в int и прибавить к taskDto.getDateSending()
                         timeProcessingMethods.processMSKTimeToLocalTimeForProfile(taskDto)
                                 .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
