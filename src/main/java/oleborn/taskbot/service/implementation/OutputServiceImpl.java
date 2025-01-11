@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -155,16 +156,17 @@ public class OutputServiceImpl implements OutputService {
     @Override
     public void returnMessageTaskViewReceived(Update update, TaskDto taskDto, String[] name) {
         ProfileDto profileDtoCreator = profileService.getProfileByID(taskDto.getCreatorId());
-        ProfileDto profileDtoOwner = profileService.getProfileByID(taskDto.getOwnerId());
-
 
         outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
                 update,
                 OutputMessages.RETURN_UPDATE_TASK.getTextMessage().formatted(
                         taskDto.getTitle(),
                         taskDto.getDescription(),
-                        taskDto.getDateCreated()
-                                .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
+                        timeProcessingMethods.processLocalTimeToMSKTime(LocalDateTime.parse(taskDto.getDateCreated()
+                                .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat()))))
+                                //КОСТЫЛЬ!!! прибавляю разницу к МСК
+                                .plusHours(Long.parseLong(profileDtoCreator.getTimeZone())),
+
                         //перевести часовой пояс из string в int и прибавить к taskDto.getDateSending()
                         timeProcessingMethods.processMSKTimeToLocalTimeForProfile(taskDto)
                                 .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
@@ -214,13 +216,17 @@ public class OutputServiceImpl implements OutputService {
 
     @Override
     public void returnMessageTaskViewCreated(Update update, TaskDto taskDto, String[] name) {
+        ProfileDto profileDtoCreator = profileService.getProfileByID(taskDto.getCreatorId());
+
         outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
                 update,
                 OutputMessages.RETURN_UPDATE_TASK.getTextMessage().formatted(
                         taskDto.getTitle(),
                         taskDto.getDescription(),
-                        taskDto.getDateCreated()
-                                .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),
+                        timeProcessingMethods.processLocalTimeToMSKTime(LocalDateTime.parse(taskDto.getDateCreated()
+                                        .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat()))))
+                                //КОСТЫЛЬ!!! прибавляю разницу к МСК
+                                .plusHours(Long.parseLong(profileDtoCreator.getTimeZone())),
                         //перевести часовой пояс из string в int и прибавить к taskDto.getDateSending()
                         timeProcessingMethods.processMSKTimeToLocalTimeForProfile(taskDto)
                                 .format(DateTimeFormatter.ofPattern(FormatDate.PRIME_FORMAT_DATE.getFormat())),

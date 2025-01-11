@@ -129,19 +129,12 @@ public class TaskServiceImpl implements TaskService {
     public void createTaskInController(TaskDto taskDto) {
         //Получаем профиль того кому устанавливается таска
         ProfileDto profileByIDOwner = profileService.getProfileByID(taskDto.getOwnerId());
-        //Получаем профиль того кто установил таску
-        ProfileDto profileByIDCreator = profileService.getProfileByID(taskDto.getCreatorId());
-
-        System.out.println("In Control "+taskDto);
 
         createTask(TaskDto.builder()
                 .ownerId(taskDto.getOwnerId())
                 .creatorId(taskDto.getCreatorId())
                 .title(taskDto.getTitle())
                 .description(taskDto.getDescription())
-                .dateCreated(timeProcessingMethods.processLocalTimeToMSKTime(LocalDateTime.now())
-                        //Тут КОСТЫЛЬ! приводим к поясному времени создателя простым сложением
-                        .plusHours(Long.parseLong(profileByIDCreator.getTimeZone())))
                 // тут надо приводить к МСК
                 .dateSending(timeProcessingMethods.processingTimeToMSK(
                         taskDto.getDateSending(), Integer.parseInt(profileService.getProfileByID(taskDto.getCreatorId()).getTimeZone()))
@@ -151,7 +144,6 @@ public class TaskServiceImpl implements TaskService {
                 .updated(false)
                 .build());
 
-        System.out.println("Created Task "+taskDto);
         // Форматирование даты в строку с нужным паттерном
         String formattedTime = taskDto.getDateSending().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
 
