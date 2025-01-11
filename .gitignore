@@ -31,7 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-# Игнорировать файлы конфигурации
-application.yaml
-application.yml
