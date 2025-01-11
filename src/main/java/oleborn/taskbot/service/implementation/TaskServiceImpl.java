@@ -132,6 +132,8 @@ public class TaskServiceImpl implements TaskService {
         //Получаем профиль того кто установил таску
         ProfileDto profileByIDCreator = profileService.getProfileByID(taskDto.getCreatorId());
 
+        System.out.println("In Control "+taskDto);
+
         createTask(TaskDto.builder()
                 .ownerId(taskDto.getOwnerId())
                 .creatorId(taskDto.getCreatorId())
@@ -149,6 +151,7 @@ public class TaskServiceImpl implements TaskService {
                 .updated(false)
                 .build());
 
+        System.out.println("Created Task "+taskDto);
         // Форматирование даты в строку с нужным паттерном
         String formattedTime = taskDto.getDateSending().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
 
