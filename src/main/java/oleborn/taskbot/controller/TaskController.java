@@ -28,77 +28,19 @@ public class TaskController {
 
     @Resource
     private TaskService taskService;
-    @Resource
-    private TaskMapper taskMapper;
-    @Resource
-    private ProfileService profileService;
 
     @Resource
     private TimeProcessingMethods timeProcessingMethods;
 
-    @Resource
-    @Lazy
-    private OutputsMethods outputsMethods;
-
     @PostMapping
     public ResponseEntity<Void> createTask(@RequestBody TaskDto taskDto) {
-        //Получаем профиль того кому устанавливается таска
-        ProfileDto profileByID = profileService.getProfileByID(taskDto.getOwnerId());
-
-        taskService.createTask(TaskDto.builder()
-                .ownerId(taskDto.getOwnerId())
-                .creatorId(taskDto.getCreatorId())
-                .title(taskDto.getTitle())
-                .description(taskDto.getDescription())
-                .dateSending(taskDto.getDateSending())
-                .timeZoneOwner(profileByID.getTimeZone()) //тут часовой пояс того кому придет уведомление
-                .sent(false)
-                .updated(false)
-                .build());
-
-        // Форматирование даты в строку с нужным паттерном
-        String formattedTime = taskDto.getDateSending().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
-
-        outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
-                taskDto.getCreatorId(),
-                OutputMessages.TASK_CREATED.getTextMessage().formatted(taskDto.getTitle(), formattedTime),
-                RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture(),
-                new InlineKeyboardBuilder()
-                        .addButton("Сказать \"спасибо\"!", "thanks") //TODO тут можно поменять
-                        .build()
-        );
+        taskService.createTaskInController(taskDto);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/update")
     public ResponseEntity<Void> updateTask(@RequestBody TaskDto taskDto) {
-
-
-        ProfileDto profileByID = profileService.getProfileByID(taskDto.getOwnerId());
-
-        taskService.updateTask(TaskDto.builder()
-                .id(taskDto.getId())
-                .ownerId(taskDto.getOwnerId())
-                .creatorId(taskDto.getCreatorId())
-                .title(taskDto.getTitle())
-                .description(taskDto.getDescription())
-                .dateSending(taskDto.getDateSending())
-                .timeZoneOwner(profileByID.getTimeZone())
-                .sent(false)
-                .updated(true)
-                .build());
-
-        // Форматирование в строку с нужным паттерном
-        String formattedTime = taskDto.getDateSending().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
-
-        outputsMethods.outputMessageWithCaptureAndInlineKeyboard(
-                taskDto.getCreatorId(),
-                OutputMessages.TASK_UPDATED.getTextMessage().formatted(taskDto.getTitle(), formattedTime),
-                RandomPictures.RANDOM_BOT_THUMBS_UP.getRandomNamePicture(),
-                new InlineKeyboardBuilder()
-                        .addButton("Сказать \"спасибо\"!", "thanks") //TODO тут можно поменять
-                        .build()
-        );
+        taskService.updateTaskInController(taskDto);
         return ResponseEntity.ok().build();
     }
 

@@ -2,7 +2,7 @@ package oleborn.taskbot.sheduler;
 
 import jakarta.annotation.Resource;
 import oleborn.taskbot.model.dto.TaskDto;
-import oleborn.taskbot.service.OutputService;
+import oleborn.taskbot.service.interfaces.OutputService;
 import oleborn.taskbot.service.interfaces.TaskService;
 import oleborn.taskbot.utils.TimeProcessingMethods;
 import org.springframework.context.annotation.Lazy;
@@ -62,4 +62,5 @@ public class Scheduler {
         outputService.setOutputsBotMessageForTask(taskDto);
     }
 }
+
 

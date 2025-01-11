@@ -22,12 +22,6 @@ public class ProfileController {
     @Resource
     private OutputsMethods outputsMethods;
 
-//    @PostMapping("/saveData")
-//    public ResponseEntity<Void> saveProfile(@RequestBody ProfileSelfDataDto dto) {
-//        profileService.saveSelfDateProfile(dto);
-//        return ResponseEntity.ok().build();
-//    }
-
     @PostMapping
     public ResponseEntity<Void> updateProfile(@RequestBody ProfileDto profileDto) {
         profileService.updateProfile(profileDto);
@@ -40,7 +34,6 @@ public class ProfileController {
                         .addButton("Начать работу!", "/start")
                         .build()
         );
-
         return ResponseEntity.ok().build();
     }
 

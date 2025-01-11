@@ -23,6 +23,9 @@ public interface ProfileService {
 
     List<ProfileDto> getSenderMeTasks(Long id);
 
-//    void saveSelfDateProfile(ProfileSelfDataDto dto);
+    void viewProfile(Update update);
 
+    void addFriendSetStatus(Update update);
+
+    void deleteFriend(Update update);
 }

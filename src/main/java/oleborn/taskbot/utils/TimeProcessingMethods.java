@@ -14,6 +14,15 @@ public class TimeProcessingMethods {
     @Resource
     private ProfileService profileService;
 
+    public LocalDateTime processingTimeToMSK(LocalDateTime time, int hoursOffset) {
+        if (hoursOffset >= 0) {
+            return time.minusHours(Math.abs(hoursOffset)); // Вычитаем часы
+        } else {
+            return time.plusHours(hoursOffset); // Добавляем часы
+
+        }
+    }
+
     public LocalDateTime processLocalTimeToMSKTime(LocalDateTime localDateTime) {
         return localDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("Europe/Moscow")).toLocalDateTime();
     }

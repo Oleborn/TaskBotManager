@@ -177,14 +177,21 @@ public class OutputsMethods extends Bot {
         }
     }
 
-    public InlineKeyboardMarkup createButtonInColumnSavedTasks(List<Task> list) {
+    public InlineKeyboardMarkup createButtonInColumnSavedTasks(List<Task> list, String methodName) {
+        String startNameForTask = "";
+        
+        if (methodName.equals("created")) {
+            startNameForTask = "savedCreatedTask_";
+        } else if (methodName.equals("received"))
+            startNameForTask = "savedReceivedTask_";
+        
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         for (Task task : list) {
             var next = createButtonMenuForInline(
                     "Созданное в " + task.getDateCreated().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")),
-                    "savedTask_" + task.getId()
+                    startNameForTask + task.getId()
             );
             keyboard.add(List.of(next));
         }

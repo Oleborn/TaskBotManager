@@ -3,15 +3,30 @@ package oleborn.taskbot.service.implementation;
 import jakarta.annotation.Resource;
 import oleborn.taskbot.mapper.ProfileMapper;
 import oleborn.taskbot.model.dto.ProfileDto;
+import oleborn.taskbot.model.dto.ProfileToSendTaskDto;
 import oleborn.taskbot.model.entities.Profile;
 import oleborn.taskbot.repository.ProfileRepository;
+import oleborn.taskbot.service.interfaces.OutputService;
 import oleborn.taskbot.service.interfaces.ProfileService;
+import oleborn.taskbot.updatehandler.UpdateHandlerImpl;
 import oleborn.taskbot.utils.CommunicationStatus;
+import oleborn.taskbot.utils.RandomPictures;
+import oleborn.taskbot.utils.UrlWebForms;
+import oleborn.taskbot.utils.outputMethods.InlineKeyboardBuilder;
+import oleborn.taskbot.utils.outputMethods.OutputsMethods;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static oleborn.taskbot.utils.CommunicationStatus.INPUT_FRIEND;
+import static oleborn.taskbot.utils.OutputMessages.*;
 
 
 @Service
@@ -23,6 +38,13 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Resource
     private ProfileMapper profileMapper;
+
+    @Resource
+    @Lazy
+    private OutputService outputService;
+
+    @Value("${taskbot.provider}")
+    private String provider;
 
 
     @Override
@@ -81,20 +103,47 @@ public class ProfileServiceImpl implements ProfileService {
                 .toList();
     }
 
+    @Override
+    public void viewProfile(Update update) {
+        ProfileDto profileDto = getProfileByID(update.getCallbackQuery().getFrom().getId());
 
-//    @Override
-//    public void saveSelfDateProfile(ProfileSelfDataDto dto) {
-//        Optional<Profile> profileEntity = profileRepository.findById(dto.getTelegramId());
-//
-//        if (profileEntity.isPresent()) {
-//            ProfileDto profileDto = ProfileDto.builder()
-//                    .yourselfName(dto.getYourselfName())
-//                    .yourselfDateOfBirth(dto.getYourselfDateOfBirth())
-//                    .yourselfDescription(dto.getYourselfDescription())
-//                    .timeZone(dto.getTimeZone())
-//                    .build();
-//
-//            profileRepository.save(profileMapper.fromDto(profileDto));
-//        }
-//    }
+        String outputMessages;
+
+        if (profileDto.getListProfilesWhoCanSendMessages().isEmpty()) {
+            outputMessages = RETURN_PROFILE_NO_FRIENDS.getTextMessage();
+        } else {
+            outputMessages = RETURN_PROFILE_RECEIVE_MESSAGE.getTextMessage().formatted(
+                    profileDto.getListProfilesWhoCanSendMessages().stream()
+                            .map(ProfileToSendTaskDto::getNickName) // Извлекаем nickName
+                            .filter(Objects::nonNull)    // Убираем возможные null значения
+                            .collect(Collectors.joining("\n")) // Соединяем через перенос строки
+            );
+        }
+        outputService.returningProfile(profileDto, update, outputMessages);
+    }
+
+    @Override
+    public void addFriendSetStatus(Update update) {
+        ProfileDto profileDto = getProfileByID(UpdateHandlerImpl.searchId(update));
+        profileDto.setCommunicationStatus(INPUT_FRIEND);
+        updateProfile(profileDto);
+
+        outputService.returnAddedFriendMessage(update);
+    }
+
+    @Override
+    public void deleteFriend(Update update) {
+        ProfileDto profileDto = getProfileByID(UpdateHandlerImpl.searchId(update));
+
+        List<ProfileToSendTaskDto> listSenders = profileDto.getListProfilesWhoCanSendMessages();
+
+        boolean isEmpty = listSenders.isEmpty();
+
+        String outputMessage = isEmpty ? RETURN_NO_SAVES_FRIENDS.getTextMessage() : RETURN_SAVES_FRIENDS.getTextMessage();
+        InlineKeyboardMarkup inlineKeyboardMarkup = isEmpty
+                ? new InlineKeyboardBuilder().addButton("В начало", "/start").build()
+                : outputService.returnButtonInColumnSavedSenders(listSenders);
+
+        outputService.returnMessageForSavedFriends(update, outputMessage, inlineKeyboardMarkup);
+    }
 }
