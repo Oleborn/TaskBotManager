@@ -1,9 +1,10 @@
 package oleborn.taskbot.service.interfaces;
 
 import oleborn.taskbot.model.dto.TaskDto;
+import oleborn.taskbot.model.entities.Task;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface TaskService {
@@ -14,14 +15,32 @@ public interface TaskService {
 
     void deleteTask(TaskDto taskDto);
 
+    void deleteTask(Long id);
+
     TaskDto getTaskByID(Long id);
 
-    LocalDateTime createLocalDateTime(String localDate, String localTime);
+    List<Task> findAllTasksByOwnerId(Long id);
 
-    List<TaskDto> getTasksForSending(OffsetDateTime time);
+    List<Task> findAllTasksByCreatorId(Long id);
 
-    OffsetDateTime convertClientToServerTime(String localDate, String localTime, String clientTimeZone);
+    List<TaskDto> getTasksForSending(LocalDateTime time);
 
     void outputInMessageTask(TaskDto taskDto);
+
+    void createTaskInController(TaskDto taskDto);
+
+    void updateTaskInController(TaskDto taskDto);
+
+    void processSaveTasksReceived(Update update);
+
+    void processSaveTasksCreated(Update update);
+
+    void taskViewReceived(Update update);
+
+    void deleteTaskMethod(Update update);
+
+    void deleteSendersMethod(Update update);
+
+    void taskViewCreated(Update update);
 
 }

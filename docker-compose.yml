@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}
+      BOT_TOKEN: ${BOT_TOKEN}
     container_name: spring-TaskBot
     ports:
       - "8443:8443"
@@ -33,4 +36,6 @@ volumes:
 networks:
   app-network:
     driver: bridge
+
+#docker-compose down -v - Удалить старый volume
 

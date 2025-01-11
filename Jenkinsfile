@@ -11,12 +11,7 @@ pipeline {
         maven 'Maven 3.9.9'
     }
 
-    stage('Debug Environment Variables') {
-        steps {
-            sh 'env | grep DB_'
-            sh 'env | grep BOT_'
-        }
-    }
+
 
     stages {
 
@@ -35,7 +30,7 @@ pipeline {
         stage('Docker Compose Down (Cleanup)') {
             steps {
                 sh '''
-                docker-compose down --remove-orphans
+                docker compose down --remove-orphans
                 '''
                 // Удаление контейнеров, которые не используются
                 sh '''
@@ -54,14 +49,14 @@ pipeline {
 
         stage('Docker Compose Build') {
             steps {
-                sh 'docker-compose build'
+                sh 'docker compose build'
             }
         }
 
         stage('Docker Compose Up') {
             steps {
                 sh '''
-                docker-compose up -d
+                docker compose up -d
                 '''
             }
         }
