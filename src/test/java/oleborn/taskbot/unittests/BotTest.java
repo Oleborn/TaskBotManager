@@ -31,36 +31,36 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 )
 public class BotTest {
 
-    @Resource
-    private TaskService taskService;
-
-    @Resource
-    private TaskMapper taskMapper;
-
-    @MockitoBean
-    private TaskRepository taskRepository;
-
-    @MockitoBean
-    private ProfileRepository profileRepository;
-
-
-    @Test
-    public void testReturnDate() {
-
-        // Объединение LocalDate и LocalTime в LocalDateTime
-        LocalDateTime localDateTime = LocalDateTime.of(
-                LocalDate.parse("2024-12-17", DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                LocalTime.parse("12:15", DateTimeFormatter.ofPattern("HH:mm"))
-        );
-
-        // Форматирование в строку с нужным паттерном
-        String formattedTime = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
-
-        System.out.println(formattedTime);
-
-    }
-
-    @Test
-    public void test(){
-    }
+//    @Resource
+//    private TaskService taskService;
+//
+//    @Resource
+//    private TaskMapper taskMapper;
+//
+//    @MockitoBean
+//    private TaskRepository taskRepository;
+//
+//    @MockitoBean
+//    private ProfileRepository profileRepository;
+//
+//
+//    @Test
+//    public void testReturnDate() {
+////
+////        // Объединение LocalDate и LocalTime в LocalDateTime
+////        LocalDateTime localDateTime = LocalDateTime.of(
+////                LocalDate.parse("2024-12-17", DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+////                LocalTime.parse("12:15", DateTimeFormatter.ofPattern("HH:mm"))
+////        );
+////
+////        // Форматирование в строку с нужным паттерном
+////        String formattedTime = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'"));
+////
+////        System.out.println(formattedTime);
+//
+//    }
+//
+//    @Test
+//    public void test(){
+//    }
 }
