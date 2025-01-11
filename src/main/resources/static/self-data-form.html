@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Form</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin-top: 10px;
+        }
+        input, textarea, button {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        button {
+            background-color: #0088cc;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0077b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .message-box {
+            background: #eef4fc;
+            border: 1px solid #cde4f9;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 20px;
+            color: #0056a3;
+        }
+        @media (max-width: 600px) {
+            input, select, textarea {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+<h2>Введите данные в профиль</h2>
+<div class="message-box" id="messageBox">Введите данные для редактирования профиля. Часовой пояс обязателен для заполнения.</div>
+
+<form id="profileForm" onsubmit="return handleSubmit(event)">
+    <input type="hidden" id="telegramId" name="telegramId">
+    <input type="hidden" id="nickName" name="nickName">
+
+    <label for="yourselfName">Ваше имя:</label>
+    <input type="text" id="yourselfName" name="yourselfName" placeholder="Введите ваше имя">
+
+    <label for="yourselfDateOfBirth">Дата рождения (в любом виде):</label>
+    <input type="text" id="yourselfDateOfBirth" name="yourselfDateOfBirth" placeholder="Введите дату Вашего рождения">
+
+    <label for="yourselfDescription">Описание:</label>
+    <textarea id="yourselfDescription" name="yourselfDescription" placeholder="Введите описание"></textarea>
+
+    <label for="timeZone">Часовой пояс (обязательно, в виде +1):</label>
+    <input type="text" id="timeZone" name="timeZone" placeholder="Часовой пояс к МСК (Например для МСК +0)" required>
+
+    <button type="submit" id="submitButton">Сохранить</button>
+</form>
+
+<script>
+    window.onload = function () {
+        if (Telegram.WebApp) {
+            const telegramId = Telegram.WebApp.initDataUnsafe.user.id;
+            const nickName = Telegram.WebApp.initDataUnsafe.user.username || "не указан";
+
+            // Заполняем скрытые поля
+            document.getElementById('telegramId').value = telegramId;
+            document.getElementById('nickName').value = nickName;
+
+            console.log("Telegram ID:", telegramId);
+            console.log("Nickname:", nickName);
+        } else {
+            showMessage("Ошибка: Telegram WebApp SDK не инициализировано.");
+        }
+
+        Telegram.WebApp.ready();
+    };
+
+    function handleSubmit(event) {
+        event.preventDefault();
+
+        // Отключаем кнопку, чтобы предотвратить повторное нажатие
+        const submitButton = document.getElementById('submitButton');
+        submitButton.disabled = true;
+
+        const telegramId = document.getElementById('telegramId').value;
+        const nickName = document.getElementById('nickName').value;
+        const yourselfName = document.getElementById('yourselfName').value;
+        const yourselfDateOfBirth = document.getElementById('yourselfDateOfBirth').value;
+        const yourselfDescription = document.getElementById('yourselfDescription').value;
+        const timeZone = document.getElementById('timeZone').value;
+
+        if (!timeZone) {
+            showMessage("Часовой пояс обязателен для заполнения.");
+            submitButton.disabled = false; // Включаем кнопку обратно
+            return;
+        }
+
+        const data = {
+            telegramId: telegramId,
+            nickName: nickName,
+            yourselfName: yourselfName || null,
+            yourselfDateOfBirth: yourselfDateOfBirth || null,
+            yourselfDescription: yourselfDescription || null,
+            timeZone
+        };
+
+        fetch('/profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Ошибка сервера');
+                }
+            })
+            .then(message => {
+                showMessage(message, true);
+
+                // Закрываем Telegram WebApp после успешной отправки
+                if (Telegram.WebApp) {
+                    Telegram.WebApp.close();
+                }
+            })
+            .catch(error => {
+                showMessage("Произошла ошибка при сохранении данных. Попробуйте еще раз.");
+                console.error("Ошибка отправки формы: ", error);
+
+                // Включаем кнопку обратно в случае ошибки
+                submitButton.disabled = false;
+            });
+    }
+
+    function showMessage(message, success = false) {
+        const messageBox = document.getElementById('messageBox');
+        messageBox.textContent = message;
+        messageBox.style.color = success ? "#007700" : "#a30000";
+        messageBox.style.borderColor = success ? "#8bc34a" : "#f44336";
+        messageBox.style.backgroundColor = success ? "#e8f5e9" : "#ffebee";
+    }
+</script>
+</body>
+</html>

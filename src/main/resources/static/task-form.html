@@ -32,13 +32,14 @@
             margin-top: 10px;
         }
         input, select, textarea, button {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
             width: 100%; /* Полная ширина формы */
             padding: 10px;
             margin-top: 8px;
             margin-bottom: 20px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 16px;
             box-sizing: border-box;
         }
         textarea {
@@ -63,6 +64,13 @@
             margin-bottom: 20px;
             color: #0056a3;
         }
+        .error-message {
+            color: #a30000;
+            font-size: 12px;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            display: none; /* Скрыто по умолчанию */
+        }
         @media (max-width: 600px) {
             input, select, textarea {
                 font-size: 14px;
@@ -75,14 +83,11 @@
 
 <div class="message-box" id="messageBox">
     Введите данные для создания напоминания.
-    <p>Учтите, что бот берет данные о Вашем часовом поясе с вашего девайса и если он установлен неверно, вовремя уведомление Вы не получите!
-        Кроме того из-за рассинхронизации серверов по времени напоминания могут приходить на несколько минут раньше или позже...</p>
-
+    <p>Учтите, что из-за рассинхронизации серверов по времени напоминания могут приходить на несколько минут раньше или позже...</p>
 </div>
 
-<form id="taskForm" action="/task" method="POST" onsubmit="return handleSubmit(event)">
+<form id="taskForm" onsubmit="return handleSubmit(event)">
     <input type="hidden" id="user_id" name="user_id" value="">
-    <input type="hidden" id="timeZone" name="timeZone" value="">
     <input type="hidden" id="recipient" name="recipient" value="">
 
     <label for="title">Заголовок:</label>
@@ -92,7 +97,8 @@
     <textarea id="description" name="description" placeholder="Введите текст напоминания"></textarea>
 
     <label for="localDate">Дата напоминания:</label>
-    <input type="date" id="localDate" name="localDate" required>
+    <input type="date" id="localDate" name="localDate" required onchange="validateDate(this)">
+    <div id="dateError" class="error-message">Введенная дата неверна</div>
 
     <label for="localTime">Время:</label>
     <input type="time" id="localTime" name="localTime" required>
@@ -112,16 +118,32 @@
             const userId = Telegram.WebApp.initDataUnsafe.user.id;
             document.getElementById('user_id').value = userId;
 
-            document.getElementById('timeZone').value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            // Устанавливаем минимальную и максимальную даты
+            const today = new Date();
+            const oneYearLater = new Date();
+            oneYearLater.setFullYear(today.getFullYear() + 1);
 
+            // Форматируем даты в локальном времени
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            document.getElementById('localDate').setAttribute('min', formatDate(today));
+            document.getElementById('localDate').setAttribute('max', formatDate(oneYearLater));
+
+            // Загрузка друзей
             fetch(`/profile/${userId}/friends`)
                 .then(response => response.json())
                 .then(friends => {
                     const recipientSelect = document.getElementById('recipientSelect');
                     friends.forEach(friend => {
                         const option = document.createElement('option');
-                        option.value = friend.id;
-                        option.textContent = friend.telegramNickname;
+                        option.value = friend.telegramId;
+                        option.textContent = friend.nickName || "Ник не задан. Кто это, хер знает...";
+                        option.setAttribute('data-timezone', friend.timeZone);
                         recipientSelect.appendChild(option);
                     });
                 })
@@ -136,22 +158,90 @@
         Telegram.WebApp.ready();
     };
 
+    const createLocalDate = (dateString) => {
+        const [year, month, day] = dateString.split('-');
+        return new Date(year, month - 1, day); // Месяц в JavaScript начинается с 0
+    };
+
+    function validateDate(input) {
+        const dateError = document.getElementById('dateError');
+        const selectedDate = createLocalDate(input.value);
+        const today = new Date();
+        const oneYearLater = new Date();
+        oneYearLater.setFullYear(today.getFullYear() + 1);
+
+        // Сравниваем только год, месяц и день
+        const isInvalid = selectedDate < new Date(today.getFullYear(), today.getMonth(), today.getDate()) ||
+            selectedDate > new Date(oneYearLater.getFullYear(), oneYearLater.getMonth(), oneYearLater.getDate());
+
+        if (isInvalid) {
+            dateError.style.display = 'block';
+            input.setCustomValidity('Введенная дата неверна');
+        } else {
+            dateError.style.display = 'none';
+            input.setCustomValidity('');
+        }
+    }
+
     function handleSubmit(event) {
         event.preventDefault();
 
+        const dateInput = document.getElementById('localDate');
+        const selectedDate = createLocalDate(dateInput.value);
+        const today = new Date();
+        const oneYearLater = new Date();
+        oneYearLater.setFullYear(today.getFullYear() + 1);
+
+        // Сравниваем только год, месяц и день
+        const isInvalid = selectedDate < new Date(today.getFullYear(), today.getMonth(), today.getDate()) ||
+            selectedDate > new Date(oneYearLater.getFullYear(), oneYearLater.getMonth(), oneYearLater.getDate());
+
+        if (isInvalid) {
+            showMessage("Введенная дата неверна.");
+            return;
+        }
+
+        // Получаем значения из формы
+        const userId = document.getElementById('user_id').value;
         const recipientValue = document.getElementById('recipientSelect').value;
-        document.getElementById('recipient').value = recipientValue === "self"
-            ? document.getElementById('user_id').value
-            : recipientValue;
+        const recipient = recipientValue === "self" ? userId : recipientValue;
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const localDate = document.getElementById('localDate').value;
+        const localTime = document.getElementById('localTime').value;
 
-        const form = event.target;
-        const formData = new FormData(form);
+        // Извлекаем часовой пояс из выбранной опции
+        const recipientSelect = document.getElementById('recipientSelect');
+        const selectedOption = recipientSelect.options[recipientSelect.selectedIndex];
+        const timeZoneOwner = selectedOption.getAttribute('data-timezone'); // Точное значение из ProfileDto
 
-        fetch(form.action, {
+        // Создаем объект для отправки
+        const taskData = {
+            ownerId: parseInt(recipient), // ID получателя
+            creatorId: parseInt(userId),  // ID создателя
+            title: title,
+            description: description,
+            dateSending: `${localDate}T${localTime}:00`, // Формат LocalDateTime
+            timeZoneOwner: timeZoneOwner, // Укажите нужный часовой пояс
+            sent: false,
+            updated: false
+        };
+
+        // Отправляем данные на сервер
+        fetch('/task', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(taskData)
         })
-            .then(response => response.text())
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Ошибка сервера');
+                }
+            })
             .then(data => {
                 showMessage("Задача успешно создана!", true);
                 Telegram.WebApp.close();

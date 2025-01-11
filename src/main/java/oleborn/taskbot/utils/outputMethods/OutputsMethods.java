@@ -2,6 +2,8 @@ package oleborn.taskbot.utils.outputMethods;
 
 import lombok.extern.slf4j.Slf4j;
 import oleborn.taskbot.bot.Bot;
+import oleborn.taskbot.model.dto.ProfileToSendTaskDto;
+import oleborn.taskbot.model.entities.Task;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -15,6 +17,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 
 import java.io.InputStream;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,11 +100,17 @@ public class OutputsMethods extends Bot {
     public void outputMessageWithCaptureAndInlineKeyboard(Update update, String text, String namePhoto, InlineKeyboardMarkup kb) {
         InputFile inputFile = new InputFile();
         InputStream is = getClass().getClassLoader().getResourceAsStream("images/" + namePhoto + ".jpg");
+        if (is == null) {
+            log.error("Файл изображения не найден: images/{}.jpg", namePhoto);
+            return;
+        }
         inputFile.setMedia(is, namePhoto);
+
+        long id = update.hasMessage() ? update.getMessage().getChatId() : update.getCallbackQuery().getMessage().getChatId();
 
         SendPhoto sendPhoto = SendPhoto.builder()
                 .photo(inputFile)
-                .chatId(update.hasMessage() ? update.getMessage().getChatId() : update.getCallbackQuery().getMessage().getChatId())
+                .chatId(id)
                 .parseMode("HTML")
                 .caption(text)
                 .replyMarkup(kb)
@@ -166,6 +175,43 @@ public class OutputsMethods extends Bot {
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public InlineKeyboardMarkup createButtonInColumnSavedTasks(List<Task> list, String methodName) {
+        String startNameForTask = "";
+        
+        if (methodName.equals("created")) {
+            startNameForTask = "savedCreatedTask_";
+        } else if (methodName.equals("received"))
+            startNameForTask = "savedReceivedTask_";
+        
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        for (Task task : list) {
+            var next = createButtonMenuForInline(
+                    "Созданное в " + task.getDateCreated().format(DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy 'года'")),
+                    startNameForTask + task.getId()
+            );
+            keyboard.add(List.of(next));
+        }
+        markup.setKeyboard(keyboard);
+        return markup;
+    }
+
+    public InlineKeyboardMarkup createButtonInColumnSavedSenders(List<ProfileToSendTaskDto> list) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        for (ProfileToSendTaskDto profileToSendTaskDto : list) {
+            var next = createButtonMenuForInline(
+                    "Nickname: " + profileToSendTaskDto.getNickName(),
+                    "deleteSenders_" + profileToSendTaskDto.getTelegramId()
+            );
+            keyboard.add(List.of(next));
+        }
+        markup.setKeyboard(keyboard);
+        return markup;
     }
 
     public InlineKeyboardMarkup createButtonInColumn(List<String> list, String nameField, String command) {

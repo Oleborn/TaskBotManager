@@ -37,3 +37,5 @@ networks:
   app-network:
     driver: bridge
 
+#docker-compose down -v - Удалить старый volume
+
